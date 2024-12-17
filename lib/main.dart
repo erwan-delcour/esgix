@@ -9,6 +9,7 @@ import 'logic/blocs/post_bloc/post_bloc.dart';
 import 'logic/blocs/post_bloc/post_event.dart';
 import 'logic/blocs/user_bloc/user_bloc.dart';
 import 'logic/blocs/user_bloc/user_state.dart';
+import 'presentation/screens/edit_profile_screen.dart';
 import 'presentation/screens/home_screen.dart';
 import 'presentation/screens/post_detail_screen.dart';
 import 'presentation/screens/profile_screen.dart';
@@ -79,6 +80,7 @@ class MyApp extends StatelessWidget {
               '/profile': (context) => const ProfileScreen(),
               '/createPost': (context) => const CreatePostScreen(),
               '/login': (context) => const LoginScreen(),
+              '/editProfile': (context) => const EditProfileScreen(),
             },
           ),
         ),

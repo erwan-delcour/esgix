@@ -58,6 +58,15 @@ class ProfileScreen extends StatelessWidget {
                   "Description: ${user.description?.isNotEmpty == true ? user.description! : 'Aucune description'}",
                   style: const TextStyle(fontSize: 14),
                 ),
+                Spacer(),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pushNamed('/editProfile');
+                    },
+                    child: const Text("Edit Profile"),
+                  ),
+                )
               ],
             ),
           );

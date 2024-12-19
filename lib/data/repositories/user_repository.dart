@@ -18,4 +18,28 @@ class UserRepository {
       throw Exception('Authentification échouée : Données manquantes.');
     }
   }
+
+  Future<User> update(String token, String userId, {
+    String? username,
+    String? avatar,
+    String? description,
+  }) async {
+    final data = await apiService.putRequest('/users/$userId', {
+      'username': username,
+      'avatar': avatar,
+      'description': description,
+    }, token: token);
+
+    return User.fromJson(data);
+  }
+
+  Future<User> fetchUser (String userId, String token) async {
+    final data = await apiService.getUserById('/users/$userId', token);
+
+    if (data.containsKey('record')) {
+      return User.fromJson(data);
+    } else {
+      throw Exception('Impossible de charger l\'utilisateur.');
+    }
+  }
 }

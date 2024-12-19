@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../logic/blocs/user_bloc/user_bloc.dart';
 import '../../logic/blocs/user_bloc/user_state.dart';
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -62,7 +63,15 @@ class ProfileScreen extends StatelessWidget {
                 Center(
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.of(context).pushNamed('/editProfile');
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => EditProfileScreen(
+                            username: user.username,
+                            avatar: user.avatar.toString(),
+                            description: user.description ?? '',
+                          ),
+                        ),
+                      );
                     },
                     child: const Text("Edit Profile"),
                   ),

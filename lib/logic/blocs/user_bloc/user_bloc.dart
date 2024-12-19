@@ -8,6 +8,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
   UserBloc({required this.userRepository}) : super(const UserState()) {
     on<LoginUserEvent>(_onLoginUser);
+    on<UpdateUserEvent>(_onUpdateUser);
   }
 
   Future<void> _onLoginUser(
@@ -21,6 +22,30 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         event.email,
         event.password,
       );
+      emit(state.copyWith(user: user, status: UserStatus.success));
+    } catch (error) {
+      emit(state.copyWith(
+        status: UserStatus.error,
+        errorMessage: error.toString(),
+      ));
+    }
+  }
+
+  Future<void> _onUpdateUser(
+    UpdateUserEvent event,
+    Emitter<UserState> emit,
+  ) async {
+    emit(state.copyWith(status: UserStatus.loading));
+
+    try {
+      await userRepository.update(
+        state.user!.token,
+        state.user!.id,
+        username: event.username,
+        avatar: event.avatar,
+        description: event.description,
+      );
+      final user = await userRepository.fetchUser(state.user!.id, state.user!.token);
       emit(state.copyWith(user: user, status: UserStatus.success));
     } catch (error) {
       emit(state.copyWith(

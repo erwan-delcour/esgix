@@ -38,14 +38,13 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     emit(state.copyWith(status: UserStatus.loading));
 
     try {
-      await userRepository.update(
+      final user = await userRepository.update(
         state.user!.token,
         state.user!.id,
         username: event.username,
         avatar: event.avatar,
         description: event.description,
       );
-      final user = await userRepository.fetchUser(state.user!.id, state.user!.token);
       emit(state.copyWith(user: user, status: UserStatus.success));
     } catch (error) {
       emit(state.copyWith(

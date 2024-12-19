@@ -32,14 +32,4 @@ class UserRepository {
 
     return User.fromJson(data);
   }
-
-  Future<User> fetchUser (String userId, String token) async {
-    final data = await apiService.getUserById('/users/$userId', token);
-
-    if (data.containsKey('record')) {
-      return User.fromJson(data);
-    } else {
-      throw Exception('Impossible de charger l\'utilisateur.');
-    }
-  }
 }

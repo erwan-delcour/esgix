@@ -4,16 +4,7 @@ import '../../logic/blocs/user_bloc/user_bloc.dart';
 import '../../logic/blocs/user_bloc/user_event.dart';
 
 class EditProfileScreen extends StatefulWidget {
-  final String username;
-  final String avatar;
-  final String description;
-
-  const EditProfileScreen({
-    super.key,
-    required this.username,
-    required this.avatar,
-    required this.description,
-  });
+  const EditProfileScreen({super.key});
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -27,9 +18,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _usernameController.text = widget.username;
-    _avatarController.text = widget.avatar;
-    _descriptionController.text = widget.description;
+    _usernameController.text = context.read<UserBloc>().state.user!.username;
+    _avatarController.text = context.read<UserBloc>().state.user!.avatar ?? '';
+    _descriptionController.text = context.read<UserBloc>().state.user!.description ?? '';
   }
 
   @override

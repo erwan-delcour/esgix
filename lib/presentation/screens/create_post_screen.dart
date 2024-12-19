@@ -80,7 +80,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
             ),
           );
-
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

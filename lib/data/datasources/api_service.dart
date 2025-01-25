@@ -152,5 +152,38 @@ class ApiService {
           'Erreur lors de la requête GET : ${response.statusCode}');
     }
   }
+
+  /// Requête DELETE avec Logs
+  Future<http.Response> deleteRequest(String endpoint, {String? token}) async {
+    final headers = {
+      'x-api-key': ApiConstants.apiKey,
+      'Content-Type': 'application/json',
+    };
+
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    } else {
+      print("Erreur: Token non fourni !");
+    }
+
+    final url = Uri.parse('${ApiConstants.baseUrl}$endpoint');
+    print("=== DELETE Request ===");
+    print("URL: $url");
+    print("Headers: $headers");
+
+    final response = await client.delete(
+      url,
+      headers: headers,
+    );
+
+    print("Response Code: ${response.statusCode}");
+    print("Response Body: ${response.body}");
+
+    if (response.statusCode == 200) {
+      return response;
+    } else {
+      throw Exception('Erreur lors de la requête DELETE : ${response.statusCode}');
+    }
+  }
   
 }

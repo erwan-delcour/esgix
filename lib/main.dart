@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
-
 import 'data/datasources/api_service.dart';
 import 'data/repositories/post_repository.dart';
 import 'data/repositories/user_repository.dart';
@@ -75,7 +74,7 @@ class MyApp extends StatelessWidget {
             initialRoute: '/',
             routes: {
               '/': (context) => const HomeScreen(),
-              '/postDetail': (context) => const PostDetailScreen(),
+              '/postDetail': (context) => const PostDetailScreen(), 
               '/profile': (context) => const ProfileScreen(),
               '/createPost': (context) => const CreatePostScreen(),
               '/login': (context) => const LoginScreen(),

@@ -7,11 +7,13 @@ class PostState extends Equatable {
   final List<Post> posts;
   final PostStatus status;
   final String? errorMessage;
+  final Post? updatedPost;
 
   const PostState({
     this.posts = const [],
     this.status = PostStatus.initial,
     this.errorMessage,
+    this.updatedPost,
   });
 
   PostState copyWith({

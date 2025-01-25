@@ -1,3 +1,4 @@
+import 'package:esgix/logic/blocs/user_bloc/user_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../logic/blocs/user_bloc/user_bloc.dart';
@@ -18,65 +19,77 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _usernameController.text = context.read<UserBloc>().state.user!.username;
-    _avatarController.text = context.read<UserBloc>().state.user!.avatar ?? '';
-    _descriptionController.text = context.read<UserBloc>().state.user!.description ?? '';
+    final state = context.read<UserBloc>().state;
+    if (state.status == UserStatus.success && state.user != null) {
+      _usernameController.text = state.user!.username;
+      _avatarController.text = state.user!.avatar ?? '';
+      _descriptionController.text = state.user!.description ?? '';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Profile'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _usernameController,
-              decoration: const InputDecoration(labelText: 'Username'),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _avatarController,
-              decoration: const InputDecoration(labelText: 'Avatar URL'),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(labelText: 'Description'),
-            ),
-            const Spacer(),
-            ElevatedButton(
-              onPressed: _onUpdateProfile,
-              child: const Text('Valider les modifications'),
-            ),
-          ],
+        child: BlocListener<UserBloc, UserState>(
+          listener: (context, state) {
+            if (state.status == UserStatus.success) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Données mises à jour avec succès.")),
+              );
+              Navigator.pop(context);
+            } else if (state.status == UserStatus.error) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Erreur: ${state.errorMessage}")),
+              );
+            }
+          },
+          child: Column(
+            children: [
+              TextField(
+                controller: _usernameController,
+                decoration: const InputDecoration(labelText: 'Username'),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _avatarController,
+                decoration: const InputDecoration(labelText: 'Avatar URL'),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(labelText: 'Description'),
+              ),
+              const Spacer(),
+              ElevatedButton(
+                onPressed: _onUpdateProfile,
+                child: const Text('Valider les modifications'),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  void _onUpdateProfile() {
-      final username = _usernameController.text.trim();
-      final avatar = _avatarController.text.trim();
-      final description = _descriptionController.text.trim();
+  void _onUpdateProfile() async {
+    final username = _usernameController.text.trim();
+    final avatar = _avatarController.text.trim();
+    final description = _descriptionController.text.trim();
 
-      context.read<UserBloc>().add(
-        UpdateUserEvent(
-          username: username,
-          avatar: avatar,
-          description: description,
-        ),
-      );
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Données mises à jour avec succès."),
-        ),
-      );
-    
+    final userBloc = context.read<UserBloc>();
+
+    userBloc.add(
+      UpdateUserEvent(
+        username: username.isNotEmpty ? username : null,
+        avatar: avatar.isNotEmpty ? avatar : null,
+        description: description.isNotEmpty ? description : null,
+      ),
+    );
   }
+  
 }

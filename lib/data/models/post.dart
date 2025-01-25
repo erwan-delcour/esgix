@@ -8,7 +8,10 @@ class Post {
   final String authorUsername;
   final String? authorAvatar;
   final int likesCount;
+  final String parentId;
   final int commentsCount;
+  bool isLiked;
+    
 
   Post({
     required this.id,
@@ -18,9 +21,11 @@ class Post {
     required this.updatedAt,
     required this.authorId,
     required this.authorUsername,
+    required this.parentId,
     this.authorAvatar,
     required this.likesCount,
     required this.commentsCount,
+    this.isLiked = false,
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -33,6 +38,7 @@ class Post {
       createdAt: json['createdAt'] ?? '',
       updatedAt: json['updatedAt'] ?? '',
       authorId: author['id'] ?? '',
+      parentId: json['parent'] ?? '',
       authorUsername: author['username'] ?? '',
       authorAvatar: author['avatar'].toString().isEmpty ? null : author['avatar'],
       likesCount: json['likesCount'] ?? 0,

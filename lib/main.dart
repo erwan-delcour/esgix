@@ -8,7 +8,6 @@ import 'data/repositories/user_repository.dart';
 import 'logic/blocs/post_bloc/post_bloc.dart';
 import 'logic/blocs/post_bloc/post_event.dart';
 import 'logic/blocs/user_bloc/user_bloc.dart';
-import 'logic/blocs/user_bloc/user_state.dart';
 import 'presentation/screens/home_screen.dart';
 import 'presentation/screens/post_detail_screen.dart';
 import 'presentation/screens/profile_screen.dart';
@@ -48,39 +47,29 @@ class MyApp extends StatelessWidget {
               userRepository: context.read<UserRepository>(),
             ),
           ),
-
           BlocProvider(
             create: (context) {
               final userBloc = context.read<UserBloc>();
-              final token = userBloc.state.user?.token ?? '';
-
               return PostBloc(
                 postRepository: context.read<PostRepository>(),
-                userToken: token,
+                userToken: userBloc.state.user?.token,
+                userId: userBloc.state.user?.id,
               )..add(LoadPostsEvent());
             },
           ),
         ],
-        child: BlocListener<UserBloc, UserState>(
-          listener: (context, state) {
-            if (state.user != null && state.user!.token.isNotEmpty) {
-              context.read<PostBloc>().updateToken(state.user!.token);
-              context.read<PostBloc>().add(LoadPostsEvent());
-            }
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'ESGIX',
+          theme: ThemeData(primarySwatch: Colors.blue),
+          initialRoute: '/',
+          routes: {
+            '/': (context) => const HomeScreen(),
+            '/postDetail': (context) => const PostDetailScreen(),
+            '/profile': (context) => const ProfileScreen(),
+            '/createPost': (context) => const CreatePostScreen(),
+            '/login': (context) => const LoginScreen(),
           },
-          child: MaterialApp(
-            debugShowCheckedModeBanner: false,
-            title: 'ESGIX',
-            theme: ThemeData(primarySwatch: Colors.blue),
-            initialRoute: '/',
-            routes: {
-              '/': (context) => const HomeScreen(),
-              '/postDetail': (context) => const PostDetailScreen(),
-              '/profile': (context) => const ProfileScreen(),
-              '/createPost': (context) => const CreatePostScreen(),
-              '/login': (context) => const LoginScreen(),
-            },
-          ),
         ),
       ),
     );

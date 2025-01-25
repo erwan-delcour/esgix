@@ -21,3 +21,21 @@ class CreatePostEvent extends PostEvent {
   @override
   List<Object?> get props => [content, imageUrl];
 }
+
+class ToggleLikePostEvent extends PostEvent {
+  final String postId;
+
+  const ToggleLikePostEvent({required this.postId});
+
+  @override
+  List<Object?> get props => [postId];
+}
+
+class LoadLikedByEvent extends PostEvent {
+  final String postId;
+
+  const LoadLikedByEvent({required this.postId});
+
+  @override
+  List<Object?> get props => [postId];
+}

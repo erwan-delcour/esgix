@@ -2,41 +2,50 @@ class Post {
   final String id;
   final String content;
   final String? imageUrl;
-  final String createdAt;
-  final String updatedAt;
   final String authorId;
   final String authorUsername;
-  final String? authorAvatar;
   final int likesCount;
-  final int commentsCount;
+  final List<String> likedBy;
 
   Post({
     required this.id,
     required this.content,
     this.imageUrl,
-    required this.createdAt,
-    required this.updatedAt,
     required this.authorId,
     required this.authorUsername,
-    this.authorAvatar,
-    required this.likesCount,
-    required this.commentsCount,
+    this.likesCount = 0,
+    this.likedBy = const [],
   });
 
-  factory Post.fromJson(Map<String, dynamic> json) {
-    final author = json['author'] ?? {};
-
+  Post copyWith({
+    String? id,
+    String? content,
+    String? imageUrl,
+    String? authorId,
+    String? authorUsername,
+    int? likesCount,
+    List<String>? likedBy,
+  }) {
     return Post(
-      id: json['id'] ?? '',
-      content: json['content'] ?? '',
-      imageUrl: json['imageUrl'].toString().isEmpty ? null : json['imageUrl'],
-      createdAt: json['createdAt'] ?? '',
-      updatedAt: json['updatedAt'] ?? '',
-      authorId: author['id'] ?? '',
-      authorUsername: author['username'] ?? '',
-      authorAvatar: author['avatar'].toString().isEmpty ? null : author['avatar'],
-      likesCount: json['likesCount'] ?? 0,
-      commentsCount: json['commentsCount'] ?? 0,
+      id: id ?? this.id,
+      content: content ?? this.content,
+      imageUrl: imageUrl ?? this.imageUrl,
+      authorId: authorId ?? this.authorId,
+      authorUsername: authorUsername ?? this.authorUsername,
+      likesCount: likesCount ?? this.likesCount,
+      likedBy: likedBy ?? this.likedBy,
+    );
+  }
+
+  factory Post.fromJson(Map<String, dynamic> json) {
+    return Post(
+      id: json['id'] as String,
+      content: json['content'] as String,
+      imageUrl: json['imageUrl'] as String?,
+      authorId: json['author']['id'] as String,
+      authorUsername: json['author']['username'] as String,
+      likesCount: json['likesCount'] as int,
+      likedBy: [],
     );
   }
 }

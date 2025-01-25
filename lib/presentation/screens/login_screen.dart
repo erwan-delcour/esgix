@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../logic/blocs/user_bloc/user_bloc.dart';
 import '../../logic/blocs/user_bloc/user_event.dart';
 import '../../logic/blocs/user_bloc/user_state.dart';
+import '../../logic/blocs/post_bloc/post_bloc.dart';
+import '../../logic/blocs/post_bloc/post_event.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -35,6 +37,17 @@ class LoginScreen extends StatelessWidget {
             BlocConsumer<UserBloc, UserState>(
               listener: (context, state) {
                 if (state.status == UserStatus.success) {
+                  final user = state.user;
+                  if (user != null) {
+                    // Mettre à jour PostBloc avec le token et l'ID utilisateur
+                    final postBloc = context.read<PostBloc>();
+                    postBloc.updateUser(token: user.token, id: user.id);
+
+                    // Charger les posts après mise à jour
+                    postBloc.add(LoadPostsEvent());
+                  }
+
+                  // Naviguer vers la page d'accueil
                   Navigator.of(context).pushNamedAndRemoveUntil(
                     '/',
                     (route) => false,

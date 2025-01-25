@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
-
 import 'data/datasources/api_service.dart';
 import 'data/repositories/post_repository.dart';
 import 'data/repositories/user_repository.dart';
 import 'logic/blocs/post_bloc/post_bloc.dart';
 import 'logic/blocs/post_bloc/post_event.dart';
 import 'logic/blocs/user_bloc/user_bloc.dart';
+import 'logic/blocs/user_bloc/user_state.dart';
+import 'presentation/screens/edit_profile_screen.dart';
 import 'presentation/screens/home_screen.dart';
 import 'presentation/screens/post_detail_screen.dart';
 import 'presentation/screens/profile_screen.dart';
@@ -52,7 +53,7 @@ class MyApp extends StatelessWidget {
               final userBloc = context.read<UserBloc>();
               return PostBloc(
                 postRepository: context.read<PostRepository>(),
-                userToken: userBloc.state.user?.token,
+                userToken: userBloc.state.user?.token ?? '',
                 userId: userBloc.state.user?.id,
               )..add(LoadPostsEvent());
             },
@@ -69,9 +70,10 @@ class MyApp extends StatelessWidget {
             '/profile': (context) => const ProfileScreen(),
             '/createPost': (context) => const CreatePostScreen(),
             '/login': (context) => const LoginScreen(),
+            '/editProfile': (context) => const EditProfileScreen(),
           },
-        ),
       ),
+      )
     );
   }
 }

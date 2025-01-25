@@ -5,21 +5,24 @@ import '../../../data/repositories/post_repository.dart';
 
 class PostBloc extends Bloc<PostEvent, PostState> {
   final PostRepository postRepository;
-  String? userToken;
+  String userToken;
 
   PostBloc({
     required this.postRepository,
-    this.userToken,
+    required this.userToken,
     String? userId,
   }) : super(PostState(userId: userId)) {
     on<LoadPostsEvent>(_onLoadPosts);
     on<CreatePostEvent>(_onCreatePost);
     on<ToggleLikePostEvent>(_onToggleLikePost);
     on<LoadLikedByEvent>(_onLoadLikedBy);
+    on<UpdatePostEvent>(_onUpdatePost);
+    on<CreateCommentEvent>(_onCreateComment); 
+    on<DeletePostEvent>(_onDeletePostEvent);
   }
 
   /// Mise à jour dynamique du token utilisateur
-  void updateUser({required String? token, required String? id}) {
+  void updateUser({required String token, required String? id}) {
     userToken = token;
     emit(state.copyWith(userId: id));
   }
@@ -32,7 +35,8 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     emit(state.copyWith(status: PostStatus.loading));
 
     try {
-      final posts = await postRepository.fetchPosts(userToken ?? '');
+      final posts = await postRepository.fetchPosts(userToken, );
+      final comments = await postRepository.fetchComments(userToken ,"plscmgec40edvmu");
       emit(state.copyWith(posts: posts, status: PostStatus.success));
     } catch (error) {
       emit(state.copyWith(
@@ -42,7 +46,15 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
-  /// Création d'un Post
+  void _onDeletePostEvent(DeletePostEvent event, Emitter<PostState> emit) async {
+    try {
+      await postRepository.deletePost(userToken, event.postId);
+      add(LoadPostsEvent());
+    } catch (_) {
+      emit(state.copyWith(status: PostStatus.error));
+    }
+  }
+
   Future<void> _onCreatePost(
     CreatePostEvent event,
     Emitter<PostState> emit,
@@ -58,6 +70,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         token: userToken!,
         content: event.content,
         imageUrl: event.imageUrl,
+        parentId: event.parentId,
       );
 
       // Recharger les posts après la création
@@ -134,6 +147,65 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       }).toList();
 
       emit(state.copyWith(posts: updatedPosts, status: PostStatus.success));
+    } catch (error) {
+      emit(state.copyWith(
+        status: PostStatus.error,
+        errorMessage: error.toString(),
+      ));
+    }
+  }
+
+  Future<void> _onUpdatePost(
+    UpdatePostEvent event,
+    Emitter<PostState> emit,
+  ) async {
+    if (userToken.isEmpty) {
+      throw Exception("Token utilisateur manquant.");
+    }
+
+    emit(state.copyWith(status: PostStatus.loading));
+
+    try {
+    
+      await postRepository.updatePost(
+        token: userToken,
+        id: event.postId,
+        content: event.content,
+        imageUrl: event.imageUrl,
+      );
+      
+      final posts = await postRepository.fetchPosts(userToken);
+
+      emit(state.copyWith(posts: posts, status: PostStatus.success));
+    } catch (error) {
+
+      emit(state.copyWith(
+        status: PostStatus.error,
+        errorMessage: error.toString(),
+      ));
+    }
+  }
+  
+  Future<void> _onCreateComment(
+    CreateCommentEvent event,
+    Emitter<PostState> emit,
+  ) async {
+    if (userToken.isEmpty) {
+      throw Exception("Token utilisateur manquant.");
+    }
+
+    emit(state.copyWith(status: PostStatus.loading));
+
+    try {
+      await postRepository.createPost(
+        token: userToken,
+        parentId: event.parentId,
+        content: event.content,
+      );
+
+      final posts = await postRepository.fetchPosts(userToken);
+
+      emit(state.copyWith(posts: posts, status: PostStatus.success));
     } catch (error) {
       emit(state.copyWith(
         status: PostStatus.error,

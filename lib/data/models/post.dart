@@ -41,6 +41,7 @@ class Post {
     String? authorUsername,
     int? commentsCount,
     int? likesCount,
+    bool? isLiked,
     List<String>? likedBy,
   }) {
     return Post(
@@ -55,6 +56,7 @@ class Post {
       authorUsername: authorUsername ?? this.authorUsername,
       commentsCount: commentsCount ?? this.commentsCount,
       likesCount: likesCount ?? this.likesCount,
+      isLiked: isLiked ?? this.isLiked,
       likedBy: likedBy ?? this.likedBy,
     );
   }

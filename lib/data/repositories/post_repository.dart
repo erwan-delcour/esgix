@@ -11,21 +11,29 @@ class PostRepository {
 
     if (data.containsKey('data')) {
       final posts = (data['data'] as List).map((post) => Post.fromJson(post)).toList();
-      
-      // Afficher les détails de chaque post dans la console
-      // for (var post in posts) {
-      //   print('Post ID: ${post.id}');
-      //   print('Content: ${post.content}');
-      //   print('Image URL: ${post.imageUrl}');
-      //   print('Parent ID: ${post.parentId}');
-      //   print('---');
-      // }
-
       return posts;
     } else {
       throw Exception('Impossible de charger les posts.');
     }
   }
+
+  Future<List<Post>> fetchPostsWithPagination({
+    required String? token,
+    required int page,
+    required int offset,
+  }) async {
+    final data = await apiService.getRequest(
+      '/posts?page=$page&offset=$offset',
+      token: token,
+    );
+
+    if (data.containsKey('data')) {
+      return (data['data'] as List).map((post) => Post.fromJson(post)).toList();
+    } else {
+      throw Exception('Impossible de charger les posts.');
+    }
+  }
+
   Future<List<Post>> fetchComments(String token, String parentId) async {
     final data = await apiService.getRequest('/posts?parent=$parentId', token: token);
 

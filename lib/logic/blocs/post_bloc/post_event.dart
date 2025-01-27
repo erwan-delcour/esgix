@@ -73,3 +73,10 @@ class LoadLikedByEvent extends PostEvent {
   @override
   List<Object?> get props => [postId];
 }
+
+class RefreshPostsEvent extends PostEvent {
+  const RefreshPostsEvent();
+
+  @override
+  List<Object?> get props => [];
+}

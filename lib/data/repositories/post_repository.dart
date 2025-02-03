@@ -143,4 +143,35 @@ Future<void> createPost({
       throw Exception('Impossible de supprimer le post.');
     }
   }
+
+  Future<List<String>> fetchUserLikes({
+    required String token,
+    required String userId,
+  }) async {
+    List<String> likedPostIds = [];
+    int currentPage = 0;
+    const int offset = 10; // Nombre de posts par page
+    bool hasMore = true;
+
+    while (hasMore) {
+      final data = await apiService.getRequest(
+        '/user/$userId/likes?page=$currentPage&offset=$offset',
+        token: token,
+      );
+
+      if (data.containsKey('data')) {
+        final List<dynamic> posts = data['data'];
+        if (posts.isEmpty) {
+          hasMore = false; // Plus de posts à charger
+        } else {
+          likedPostIds.addAll(posts.map((post) => post['id'] as String));
+          currentPage++; // Charger la page suivante
+        }
+      } else {
+        throw Exception("Impossible de récupérer les posts likés.");
+      }
+    }
+
+    return likedPostIds;
+  }
 }

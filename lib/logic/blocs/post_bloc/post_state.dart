@@ -14,14 +14,18 @@ class PostState extends Equatable {
   final int currentPage;
   final bool hasReachedMax;
 
+  // Champs pour la gestion des likes utilisateur
+  final Set<String> likedPostIds;
+
   const PostState({
     this.posts = const [],
     this.status = PostStatus.initial,
     this.errorMessage,
     this.userId,
     this.updatedPost,
-    this.currentPage = 0, 
-    this.hasReachedMax = false, 
+    this.currentPage = 0,
+    this.hasReachedMax = false,
+    this.likedPostIds = const {},
   });
 
   PostState copyWith({
@@ -32,6 +36,7 @@ class PostState extends Equatable {
     Post? updatedPost,
     int? currentPage,
     bool? hasReachedMax,
+    Set<String>? likedPostIds,
   }) {
     return PostState(
       posts: posts ?? this.posts,
@@ -41,6 +46,7 @@ class PostState extends Equatable {
       updatedPost: updatedPost ?? this.updatedPost,
       currentPage: currentPage ?? this.currentPage,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
+      likedPostIds: likedPostIds ?? this.likedPostIds,
     );
   }
 
@@ -53,5 +59,6 @@ class PostState extends Equatable {
         updatedPost,
         currentPage,
         hasReachedMax,
+        likedPostIds, // Ajout pour suivre les posts likés
       ];
 }

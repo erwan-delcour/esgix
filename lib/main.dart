@@ -14,6 +14,7 @@ import 'presentation/screens/post_detail_screen.dart';
 import 'presentation/screens/profile_screen.dart';
 import 'presentation/screens/create_post_screen.dart';
 import 'presentation/screens/login_screen.dart';
+import 'presentation/screens/register_screen.dart';
 
 void main() {
   final apiService = ApiService(http.Client());
@@ -71,6 +72,7 @@ class MyApp extends StatelessWidget {
             '/createPost': (context) => const CreatePostScreen(),
             '/login': (context) => const LoginScreen(),
             '/editProfile': (context) => const EditProfileScreen(),
+            '/register': (context) => const RegisterScreen(),
           },
       ),
       )

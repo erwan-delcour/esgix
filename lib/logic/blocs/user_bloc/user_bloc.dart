@@ -10,6 +10,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   UserBloc({required this.userRepository}) : super(const UserState()) {
     on<LoginUserEvent>(_onLoginUser);
     on<UpdateUserEvent>(_onUpdateUser);
+    on<RegisterUserEvent>(_onRegisterUser);
   }
 
   Future<void> _onLoginUser(
@@ -32,37 +33,59 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     }
   }
 
-    Future<void> _onUpdateUser(
+  Future<void> _onUpdateUser(
     UpdateUserEvent event,
     Emitter<UserState> emit,
   ) async {
     emit(state.copyWith(status: UserStatus.loading));
+    try {
+      final currentUser = state.user!;
+      final updatedUser = User(
+        id: currentUser.id,
+        username: (event.username?.isNotEmpty ?? false) ? event.username! : currentUser.username,
+        email: currentUser.email,
+        avatar: (event.avatar?.isNotEmpty ?? false) ? event.avatar! : currentUser.avatar,
+        description: (event.description?.isNotEmpty ?? false) ? event.description! : currentUser.description,
+        token: currentUser.token,
+      );
 
-      try {
-        final currentUser = state.user!;
-        final updatedUser = User(
-          id: currentUser.id,
-          username: (event.username?.isNotEmpty ?? false) ? event.username! : currentUser.username,
-          email: currentUser.email,
-          avatar: (event.avatar?.isNotEmpty ?? false) ? event.avatar! : currentUser.avatar,
-          description: (event.description?.isNotEmpty ?? false) ? event.description! : currentUser.description,
-          token: currentUser.token,
-        );
+      await userRepository.update(
+        currentUser.token,
+        currentUser.id,
+        username: event.username ?? currentUser.username,
+        avatar: event.avatar,
+        description: event.description,
+      );
 
-        await userRepository.update(
-          currentUser.token,
-          currentUser.id,
-          username: event.username ?? currentUser.username,
-          avatar: event.avatar,
-          description: event.description,
-        );
-
-        emit(state.copyWith(user: updatedUser, status: UserStatus.success));
-      } catch (error) {
-        emit(state.copyWith(
-          status: UserStatus.error,
-          errorMessage: error.toString(),
-        ));
-      }
+      emit(state.copyWith(user: updatedUser, status: UserStatus.success));
+    } catch (error) {
+      emit(state.copyWith(
+        status: UserStatus.error,
+        errorMessage: error.toString(),
+      ));
     }
+  }
+
+  Future<void> _onRegisterUser(
+    RegisterUserEvent event,
+    Emitter<UserState> emit,
+  ) async {
+    emit(state.copyWith(status: UserStatus.loading));
+
+    try {
+      final user = await userRepository.registerUser(
+        email: event.email,
+        username: event.username,
+        password: event.password,
+        avatar: event.avatar,
+      );
+
+      emit(state.copyWith(user: user, status: UserStatus.success));
+    } catch (error) {
+      emit(state.copyWith(
+        status: UserStatus.error,
+        errorMessage: error.toString(),
+      ));
+    }
+  }
 }

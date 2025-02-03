@@ -63,7 +63,13 @@ class HomeScreen extends StatelessWidget {
 
           return RefreshIndicator(
             onRefresh: () async {
-              context.read<PostBloc>().add(const RefreshPostsEvent());
+              final postBloc = context.read<PostBloc>();
+              postBloc.add(const RefreshPostsEvent());
+
+              final currentUserId = context.read<UserBloc>().state.user?.id;
+              if (currentUserId != null) {
+                postBloc.add(LoadUserLikedPostsEvent()); // Recharger les likes de l'utilisateur après le refresh
+              }
             },
             child: NotificationListener<ScrollNotification>(
               onNotification: (scrollNotification) {
@@ -124,18 +130,18 @@ class HomeScreen extends StatelessWidget {
                                 post.likesCount.toString(),
                                 style: TextStyle(
                                   color: currentUserId != null &&
-                                          post.likedBy.contains(currentUserId)
-                                      ? Colors.red
-                                      : Colors.grey,
+                                    (post.likedBy.contains(currentUserId) || state.likedPostIds.contains(post.id))
+                                  ? Colors.red
+                                  : Colors.grey,
                                 ),
                               ),
                               IconButton(
                                 icon: Icon(
-                                  post.likedBy.contains(currentUserId)
+                                  (post.likedBy.contains(currentUserId) || state.likedPostIds.contains(post.id))
                                       ? Icons.favorite
                                       : Icons.favorite_border,
                                   color: currentUserId != null &&
-                                          post.likedBy.contains(currentUserId)
+                                        (post.likedBy.contains(currentUserId) || state.likedPostIds.contains(post.id))
                                       ? Colors.red
                                       : Colors.grey,
                                 ),

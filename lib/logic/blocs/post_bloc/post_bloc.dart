@@ -15,20 +15,25 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     String? userId,
   }) : super(PostState(userId: userId)) {
     on<LoadPostsEvent>(_onLoadPosts);
+    on<RefreshPostsEvent>(_onRefreshPosts);
     on<CreatePostEvent>(_onCreatePost);
     on<ToggleLikePostEvent>(_onToggleLikePost);
     on<LoadLikedByEvent>(_onLoadLikedBy);
     on<UpdatePostEvent>(_onUpdatePost);
     on<CreateCommentEvent>(_onCreateComment);
     on<DeletePostEvent>(_onDeletePostEvent);
-    on<RefreshPostsEvent>(_onRefreshPosts); // Nouvelle fonction ajoutée
-
+    on<LoadUserLikedPostsEvent>(_onLoadUserLikedPosts); // Ajouté pour récupérer les posts likés
   }
 
   /// Mise à jour dynamique du token utilisateur
   void updateUser({required String token, required String? id}) {
     userToken = token;
     emit(state.copyWith(userId: id));
+
+    // Charger les posts likés après connexion
+    if (id != null) {
+      add(LoadUserLikedPostsEvent());
+    }
   }
 
   /// Chargement des Posts avec pagination
@@ -36,8 +41,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     LoadPostsEvent event,
     Emitter<PostState> emit,
   ) async {
-    // Ne pas recharger si on a atteint la fin des posts
-    if (state.hasReachedMax) return;
+    if (state.hasReachedMax) return; // Ne pas recharger si fin des posts atteinte
 
     emit(state.copyWith(status: PostStatus.loading));
 
@@ -49,29 +53,26 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       );
 
       if (posts.isEmpty) {
-        // Si aucun nouveau post n'est chargé, marquer comme "fin des résultats"
         emit(state.copyWith(hasReachedMax: true, status: PostStatus.success));
       } else {
         emit(state.copyWith(
           posts: [...state.posts, ...posts],
           status: PostStatus.success,
         ));
-        currentPage++; // Passer à la page suivante
+        currentPage++;
       }
     } catch (error) {
-      emit(state.copyWith(
-        status: PostStatus.error,
-        errorMessage: error.toString(),
-      ));
+      emit(state.copyWith(status: PostStatus.error, errorMessage: error.toString()));
     }
   }
 
+  /// Rafraîchissement des posts et des likes
   Future<void> _onRefreshPosts(
     RefreshPostsEvent event,
     Emitter<PostState> emit,
   ) async {
-    emit(state.copyWith(status: PostStatus.loading, hasReachedMax: false));
-    currentPage = 0; // Réinitialiser à la première page
+    currentPage = 0; // Réinitialiser la pagination
+    emit(state.copyWith(status: PostStatus.loading, posts: [], hasReachedMax: false));
 
     try {
       final posts = await postRepository.fetchPostsWithPagination(
@@ -80,21 +81,52 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         offset: offset,
       );
 
-      emit(state.copyWith(posts: posts, status: PostStatus.success));
-      currentPage++;
-      if (state.userId != null) {
-        for (final post in posts) {
-          add(LoadLikedByEvent(postId: post.id));
-        }
-      }
+      // Recharger les likes de chaque post
+      final updatedPosts = await Future.wait(posts.map((post) async {
+        final likedBy = await postRepository.fetchLikedBy(token: userToken, postId: post.id);
+        return post.copyWith(likedBy: likedBy, likesCount: likedBy.length);
+      }));
+
+      emit(state.copyWith(posts: updatedPosts, status: PostStatus.success));
+
+      currentPage++; // Passer à la page suivante après refresh
     } catch (error) {
-      emit(state.copyWith(
-        status: PostStatus.error,
-        errorMessage: error.toString(),
-      ));
+      emit(state.copyWith(status: PostStatus.error, errorMessage: error.toString()));
     }
   }
 
+  Future<void> _onDeletePostEvent(
+    DeletePostEvent event,
+    Emitter<PostState> emit,
+  ) async {
+    try {
+      await postRepository.deletePost(userToken, event.postId);
+      add(RefreshPostsEvent()); // 🔥 Rafraîchir après suppression
+    } catch (_) {
+      emit(state.copyWith(status: PostStatus.error));
+    }
+  }
+
+
+  Future<void> _onLoadUserLikedPosts(
+    LoadUserLikedPostsEvent event,
+    Emitter<PostState> emit,
+  ) async {
+    if (state.userId == null) return;
+
+    try {
+      final likedPostIds = await postRepository.fetchUserLikes(
+        token: userToken,
+        userId: state.userId!,
+      );
+
+      emit(state.copyWith(likedPostIds: likedPostIds.toSet())); // Mise à jour des posts likés
+    } catch (error) {
+      print("Erreur lors du chargement des posts likés : $error");
+    }
+  }
+
+  /// Création d'un Post
   Future<void> _onCreatePost(
     CreatePostEvent event,
     Emitter<PostState> emit,
@@ -113,60 +145,34 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         parentId: event.parentId,
       );
 
-      // Recharger les posts après la création
-      final posts = await postRepository.fetchPostsWithPagination(
-        token: userToken,
-        page: 0,
-        offset: offset,
-      );
-      emit(state.copyWith(posts: posts, status: PostStatus.success));
+      add(RefreshPostsEvent());
     } catch (error) {
-      emit(state.copyWith(
-        status: PostStatus.error,
-        errorMessage: error.toString(),
-      ));
+      emit(state.copyWith(status: PostStatus.error, errorMessage: error.toString()));
     }
   }
 
-  void _onDeletePostEvent(DeletePostEvent event, Emitter<PostState> emit) async {
-    try {
-      await postRepository.deletePost(userToken, event.postId);
-      // Recharger les posts après la suppression
-      add(LoadPostsEvent());
-    } catch (_) {
-      emit(state.copyWith(status: PostStatus.error));
-    }
-  }
-
-  /// Like/Unlike d'un Post
+  /// Like / Unlike d'un Post
   Future<void> _onToggleLikePost(
     ToggleLikePostEvent event,
     Emitter<PostState> emit,
   ) async {
-    print("=== Toggle Like Post ===");
-    print("Post ID : ${event.postId}");
-    print("Token utilisateur : $userToken");
-
     if (userToken.isEmpty) {
       throw Exception("Veuillez vous connecter avant de liker un post.");
     }
 
     try {
-      await postRepository.toggleLikePost(
-        token: userToken,
-        postId: event.postId,
-      );
+      await postRepository.toggleLikePost(token: userToken, postId: event.postId);
 
-      // Mise à jour immédiate des likes localement
+      // Recharger les posts likés
+      add(LoadUserLikedPostsEvent());
+
       final updatedPosts = state.posts.map((post) {
         if (post.id == event.postId) {
-          final isLiked = post.likedBy.contains(state.userId);
-          final updatedLikedBy = isLiked
-              ? post.likedBy.where((id) => id != state.userId).toList()
-              : [...post.likedBy, state.userId!];
-
+          final isLiked = state.likedPostIds.contains(post.id);
           return post.copyWith(
-            likedBy: updatedLikedBy,
+            likedBy: isLiked
+                ? post.likedBy.where((id) => id != state.userId).toList()
+                : [...post.likedBy, state.userId!],
             likesCount: isLiked ? post.likesCount - 1 : post.likesCount + 1,
           );
         }
@@ -175,10 +181,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
       emit(state.copyWith(posts: updatedPosts, status: PostStatus.success));
     } catch (error) {
-      emit(state.copyWith(
-        status: PostStatus.error,
-        errorMessage: error.toString(),
-      ));
+      emit(state.copyWith(status: PostStatus.error, errorMessage: error.toString()));
     }
   }
 
@@ -202,13 +205,11 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
       emit(state.copyWith(posts: updatedPosts, status: PostStatus.success));
     } catch (error) {
-      emit(state.copyWith(
-        status: PostStatus.error,
-        errorMessage: error.toString(),
-      ));
+      emit(state.copyWith(status: PostStatus.error, errorMessage: error.toString()));
     }
   }
 
+  /// Mise à jour d'un Post
   Future<void> _onUpdatePost(
     UpdatePostEvent event,
     Emitter<PostState> emit,
@@ -227,21 +228,13 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         imageUrl: event.imageUrl,
       );
 
-      final posts = await postRepository.fetchPostsWithPagination(
-        token: userToken,
-        page: 0,
-        offset: offset,
-      );
-
-      emit(state.copyWith(posts: posts, status: PostStatus.success));
+      add(RefreshPostsEvent());
     } catch (error) {
-      emit(state.copyWith(
-        status: PostStatus.error,
-        errorMessage: error.toString(),
-      ));
+      emit(state.copyWith(status: PostStatus.error, errorMessage: error.toString()));
     }
   }
 
+  /// Création d'un Commentaire
   Future<void> _onCreateComment(
     CreateCommentEvent event,
     Emitter<PostState> emit,
@@ -259,18 +252,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         content: event.content,
       );
 
-      final posts = await postRepository.fetchPostsWithPagination(
-        token: userToken,
-        page: 0,
-        offset: offset,
-      );
-
-      emit(state.copyWith(posts: posts, status: PostStatus.success));
+      add(RefreshPostsEvent());
     } catch (error) {
-      emit(state.copyWith(
-        status: PostStatus.error,
-        errorMessage: error.toString(),
-      ));
+      emit(state.copyWith(status: PostStatus.error, errorMessage: error.toString()));
     }
   }
 }

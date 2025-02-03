@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../../data/models/post.dart';
+import 'post_event.dart';
 
 enum PostStatus { initial, loading, success, error }
 
@@ -9,6 +10,7 @@ class PostState extends Equatable {
   final String? errorMessage;
   final String? userId;
   final Post? updatedPost;
+  final PostEvent? lastEvent; // Ajout pour suivre l'événement déclencheur
 
   // Champs pour la pagination
   final int currentPage;
@@ -26,6 +28,7 @@ class PostState extends Equatable {
     this.currentPage = 0,
     this.hasReachedMax = false,
     this.likedPostIds = const {},
+    this.lastEvent,
   });
 
   PostState copyWith({
@@ -37,6 +40,7 @@ class PostState extends Equatable {
     int? currentPage,
     bool? hasReachedMax,
     Set<String>? likedPostIds,
+    PostEvent? lastEvent,
   }) {
     return PostState(
       posts: posts ?? this.posts,
@@ -47,6 +51,7 @@ class PostState extends Equatable {
       currentPage: currentPage ?? this.currentPage,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
       likedPostIds: likedPostIds ?? this.likedPostIds,
+      lastEvent: lastEvent ?? this.lastEvent,
     );
   }
 
@@ -59,6 +64,7 @@ class PostState extends Equatable {
         updatedPost,
         currentPage,
         hasReachedMax,
+        lastEvent,
         likedPostIds, // Ajout pour suivre les posts likés
       ];
 }

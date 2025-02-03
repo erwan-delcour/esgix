@@ -16,35 +16,42 @@ class PostDetailScreen extends StatelessWidget {
     final post = ModalRoute.of(context)!.settings.arguments as Post;
     final currentUser = context.read<UserBloc>().state.user?.username;
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<PostBloc>().add(LoadCommentsEvent(postId: post.id));
+    });
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Post Details"),
-      ),
+      appBar: AppBar(title: const Text("Post Details")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: BlocListener<PostBloc, PostState>(
           listener: (context, state) {
             if (state.status == PostStatus.success) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Post mis à jour avec succès.")),
-              );
-              Navigator.pop(context, state.posts);
+              final postBloc = context.read<PostBloc>();
+              final lastEvent = postBloc.state.lastEvent;
+
+              if (lastEvent is UpdatePostEvent) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Post mis à jour avec succès.")),
+                );
+                Navigator.pop(context, state.posts);
+              }
             } else if (state.status == PostStatus.error) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Erreur lors de la mise à jour du post.")),
+                const SnackBar(
+                    content: Text("Erreur lors de la mise à jour du post.")),
               );
             }
           },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(post.content, style: TextStyle(fontSize: 18)),
-              SizedBox(height: 16),
-              if (post.imageUrl != null)
-                Image.network(post.imageUrl!),
-              SizedBox(height: 16),
+              Text(post.content, style: const TextStyle(fontSize: 18)),
+              const SizedBox(height: 16),
+              if (post.imageUrl != null) Image.network(post.imageUrl!),
+              const SizedBox(height: 16),
               Text('Auteur: ${post.authorUsername}'),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               if (currentUser == post.authorUsername)
                 Center(
                   child: ElevatedButton.icon(
@@ -59,20 +66,19 @@ class PostDetailScreen extends StatelessWidget {
                           ),
                         ),
                       );
-                      
                       if (result != null) {
                         context.read<PostBloc>().add(UpdatePostEvent(
-                          postId: post.id,
-                          content: result['content'],
-                          imageUrl: result['imageUrl'],
-                        ));
+                              postId: post.id,
+                              content: result['content'],
+                              imageUrl: result['imageUrl'],
+                            ));
                       }
                     },
                     icon: const Icon(Icons.edit),
                     label: const Text("Edit the Post"),
                   ),
                 ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               if (currentUser == post.authorUsername)
                 Center(
                   child: ElevatedButton.icon(
@@ -83,17 +89,105 @@ class PostDetailScreen extends StatelessWidget {
                     label: const Text("Supprimer le Post"),
                   ),
                 ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CreateCommentScreen(parentId: post.id),
+                      builder: (context) =>
+                          CreateCommentScreen(parentId: post.id),
                     ),
                   );
                 },
-                child: Text('Ajouter un commentaire'),
+                child: const Text('Ajouter un commentaire'),
+              ),
+              const SizedBox(height: 16),
+              const Text("Commentaires",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              BlocBuilder<PostBloc, PostState>(
+                builder: (context, state) {
+                  if (state.status == PostStatus.loading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state.status == PostStatus.error) {
+                    return const Center(
+                        child:
+                            Text("Erreur lors du chargement des commentaires"));
+                  } else if (state.posts.isEmpty) {
+                    return const Center(
+                        child: Text("Aucun commentaire pour le moment."));
+                  }
+
+                  final comments =
+                      state.posts.where((p) => p.parentId == post.id).toList();
+
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: comments.length,
+                    itemBuilder: (context, index) {
+                      final comment = comments[index];
+
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(comment.authorUsername,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                  if (comment.authorUsername == currentUser)
+                                    IconButton(
+                                      icon: const Icon(Icons.delete,
+                                          color: Colors.red),
+                                      onPressed: () async {
+                                        final postBloc =
+                                            context.read<PostBloc>();
+
+                                        final confirm = await showDialog<bool>(
+                                          context: context,
+                                          builder: (context) => AlertDialog(
+                                            title: const Text("Confirmation"),
+                                            content: const Text(
+                                                "Voulez-vous vraiment supprimer ce commentaire ?"),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(
+                                                    context, false),
+                                                child: const Text("Annuler"),
+                                              ),
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(
+                                                    context, true),
+                                                child: const Text("Supprimer"),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+
+                                        if (confirm == true) {
+                                          postBloc.add(DeleteCommentEvent(comment
+                                              .id)); // ✅ On utilise postBloc ici, pas context.read()
+                                        }
+                                      },
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(comment.content),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
             ],
           ),

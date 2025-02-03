@@ -11,6 +11,19 @@ class LoadPostsEvent extends PostEvent {}
 
 class LoadUserLikedPostsEvent extends PostEvent {}
 
+class ClearCommentsEvent extends PostEvent {}
+
+class LoadCommentsEvent extends PostEvent {
+  final String postId;
+
+  const LoadCommentsEvent({
+    required this.postId
+    });
+
+  @override
+  List<Object?> get props => [postId];
+}
+
 class CreatePostEvent extends PostEvent {
   final String content;
   final String? imageUrl;
@@ -87,4 +100,10 @@ class RefreshPostsEvent extends PostEvent {
 
   @override
   List<Object?> get props => [];
+}
+
+class DeleteCommentEvent extends PostEvent {
+  final String commentId;
+
+  const DeleteCommentEvent(this.commentId);
 }

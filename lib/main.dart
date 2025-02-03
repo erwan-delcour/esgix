@@ -56,7 +56,7 @@ class MyApp extends StatelessWidget {
                 postRepository: context.read<PostRepository>(),
                 userToken: userBloc.state.user?.token ?? '',
                 userId: userBloc.state.user?.id,
-              )..add(LoadPostsEvent());
+              );
             },
           ),
         ],

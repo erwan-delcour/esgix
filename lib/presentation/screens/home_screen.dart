@@ -1,14 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../../logic/blocs/post_bloc/post_bloc.dart';
 import '../../logic/blocs/post_bloc/post_event.dart';
 import '../../logic/blocs/post_bloc/post_state.dart';
 import '../../logic/blocs/user_bloc/user_bloc.dart';
 import '../../logic/blocs/user_bloc/user_state.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late PostBloc postBloc;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    /// Stocker le bloc dans une variable pour éviter de l'utiliser après suppression du widget
+    postBloc = context.read<PostBloc>();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        postBloc.add(LoadPostsEvent());
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +51,9 @@ class HomeScreen extends StatelessWidget {
               } else {
                 final user = state.user;
                 return IconButton(
-                  icon: user != null && user.avatar != null && user.avatar!.isNotEmpty
+                  icon: user != null &&
+                          user.avatar != null &&
+                          user.avatar!.isNotEmpty
                       ? CircleAvatar(
                           backgroundImage: NetworkImage(user.avatar!),
                         )
@@ -68,7 +90,8 @@ class HomeScreen extends StatelessWidget {
 
               final currentUserId = context.read<UserBloc>().state.user?.id;
               if (currentUserId != null) {
-                postBloc.add(LoadUserLikedPostsEvent()); // Recharger les likes de l'utilisateur après le refresh
+                postBloc.add(
+                    LoadUserLikedPostsEvent()); // Recharger les likes de l'utilisateur après le refresh
               }
             },
             child: NotificationListener<ScrollNotification>(
@@ -82,7 +105,8 @@ class HomeScreen extends StatelessWidget {
                 return false;
               },
               child: ListView.builder(
-                itemCount: state.hasReachedMax ? posts.length : posts.length + 1,
+                itemCount:
+                    state.hasReachedMax ? posts.length : posts.length + 1,
                 itemBuilder: (context, index) {
                   if (index >= posts.length) {
                     return const Center(child: CircularProgressIndicator());
@@ -93,7 +117,9 @@ class HomeScreen extends StatelessWidget {
                   // Charger les likes si nécessaire et si l'utilisateur est connecté
                   if (currentUserId != null && !loadedLikes.contains(post.id)) {
                     loadedLikes.add(post.id);
-                    context.read<PostBloc>().add(LoadLikedByEvent(postId: post.id));
+                    context
+                        .read<PostBloc>()
+                        .add(LoadLikedByEvent(postId: post.id));
                   }
 
                   return Card(
@@ -123,6 +149,14 @@ class HomeScreen extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+                          subtitle: Text(
+                            "@${post.authorUsername}",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey,
+                            ),
+                          ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -130,18 +164,26 @@ class HomeScreen extends StatelessWidget {
                                 post.likesCount.toString(),
                                 style: TextStyle(
                                   color: currentUserId != null &&
-                                    (post.likedBy.contains(currentUserId) || state.likedPostIds.contains(post.id))
-                                  ? Colors.red
-                                  : Colors.grey,
+                                          (post.likedBy
+                                                  .contains(currentUserId) ||
+                                              state.likedPostIds
+                                                  .contains(post.id))
+                                      ? Colors.red
+                                      : Colors.grey,
                                 ),
                               ),
+                              
                               IconButton(
                                 icon: Icon(
-                                  (post.likedBy.contains(currentUserId) || state.likedPostIds.contains(post.id))
+                                  (post.likedBy.contains(currentUserId) ||
+                                          state.likedPostIds.contains(post.id))
                                       ? Icons.favorite
                                       : Icons.favorite_border,
                                   color: currentUserId != null &&
-                                        (post.likedBy.contains(currentUserId) || state.likedPostIds.contains(post.id))
+                                          (post.likedBy
+                                                  .contains(currentUserId) ||
+                                              state.likedPostIds
+                                                  .contains(post.id))
                                       ? Colors.red
                                       : Colors.grey,
                                 ),

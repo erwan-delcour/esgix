@@ -1,13 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import '../../logic/blocs/post_bloc/post_bloc.dart';
+import '../../logic/blocs/post_bloc/post_event.dart';
+import '../../logic/blocs/post_bloc/post_state.dart';
 import '../../logic/blocs/user_bloc/user_bloc.dart';
 import '../../logic/blocs/user_bloc/user_state.dart';
-import '../../logic/blocs/post_bloc/post_bloc.dart';
-import '../../logic/blocs/post_bloc/post_state.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late PostBloc postBloc;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    /// Stocker le bloc dans une variable pour éviter de l'utiliser après suppression du widget
+    postBloc = context.read<PostBloc>();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        postBloc.add(LoadPostsEvent());
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,11 +83,18 @@ class HomeScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               final post = posts[index];
               return GestureDetector(
-                onTap: () => Navigator.pushNamed(
-                  context,
-                  '/postDetail',
-                  arguments: post,
-                ),
+                onTap: () async {
+                  await Navigator.pushNamed(
+                    context,
+                    '/postDetail',
+                    arguments: post,
+                  );
+
+                  /// Vérification si le widget est toujours monté avant d'accéder à postBloc
+                  if (mounted) {
+                    postBloc.add(LoadPostsEvent());
+                  }
+                },
                 child: Card(
                   margin: const EdgeInsets.all(8.0),
                   shape: RoundedRectangleBorder(

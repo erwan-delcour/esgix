@@ -9,6 +9,17 @@ abstract class PostEvent extends Equatable {
 
 class LoadPostsEvent extends PostEvent {}
 
+class LoadCommentsEvent extends PostEvent {
+  final String postId;
+
+  const LoadCommentsEvent({
+    required this.postId
+    });
+
+  @override
+  List<Object?> get props => [postId];
+}
+
 class CreatePostEvent extends PostEvent {
   final String content;
   final String? imageUrl;
@@ -54,4 +65,10 @@ class DeletePostEvent extends PostEvent {
 
   @override
   List<Object> get props => [postId];
+}
+
+class DeleteCommentEvent extends PostEvent {
+  final String commentId;
+
+  const DeleteCommentEvent(this.commentId);
 }

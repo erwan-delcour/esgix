@@ -14,8 +14,10 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     on<LoadPostsEvent>(_onLoadPosts);
     on<CreatePostEvent>(_onCreatePost);
     on<UpdatePostEvent>(_onUpdatePost);
+    on<LoadCommentsEvent>(_onLoadComments);
     on<CreateCommentEvent>(_onCreateComment); 
     on<DeletePostEvent>(_onDeletePostEvent);
+    on<DeleteCommentEvent>(_onDeleteCommentEvent);
   }
   
   void updateToken(String token) {
@@ -30,7 +32,23 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
     try {
       final posts = await postRepository.fetchPosts(userToken);
-      final comments = await postRepository.fetchComments(userToken ,"plscmgec40edvmu");
+      emit(state.copyWith(posts: posts, status: PostStatus.success));
+    } catch (error) {
+      emit(state.copyWith(
+        status: PostStatus.error,
+        errorMessage: error.toString(),
+      ));
+    }
+  }
+
+  Future<void> _onLoadComments(
+    LoadCommentsEvent event,
+    Emitter<PostState> emit,
+  ) async {
+    emit(state.copyWith(status: PostStatus.loading));
+
+    try {
+      final posts = await postRepository.fetchComments(userToken, event.postId);
       emit(state.copyWith(posts: posts, status: PostStatus.success));
     } catch (error) {
       emit(state.copyWith(
@@ -44,6 +62,15 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     try {
       await postRepository.deletePost(userToken, event.postId);
       add(LoadPostsEvent());
+    } catch (_) {
+      emit(state.copyWith(status: PostStatus.error));
+    }
+  }
+
+  void _onDeleteCommentEvent(DeleteCommentEvent event, Emitter<PostState> emit) async {
+    try {
+      await postRepository.deletePost(userToken, event.commentId);
+      add(LoadCommentsEvent(postId: event.commentId));
     } catch (_) {
       emit(state.copyWith(status: PostStatus.error));
     }
@@ -78,35 +105,29 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   }
 
   Future<void> _onUpdatePost(
-    UpdatePostEvent event,
-    Emitter<PostState> emit,
-  ) async {
-    if (userToken.isEmpty) {
-      throw Exception("Token utilisateur manquant.");
-    }
+  UpdatePostEvent event,
+  Emitter<PostState> emit,
+) async {
+  emit(state.copyWith(status: PostStatus.loading, lastEvent: event));
 
-    emit(state.copyWith(status: PostStatus.loading));
+  try {
+    await postRepository.updatePost(
+      token: userToken,
+      id: event.postId,
+      content: event.content,
+      imageUrl: event.imageUrl,
+    );
 
-    try {
-    
-      await postRepository.updatePost(
-        token: userToken,
-        id: event.postId,
-        content: event.content,
-        imageUrl: event.imageUrl,
-      );
-      
-      final posts = await postRepository.fetchPosts(userToken);
-
-      emit(state.copyWith(posts: posts, status: PostStatus.success));
-    } catch (error) {
-
-      emit(state.copyWith(
-        status: PostStatus.error,
-        errorMessage: error.toString(),
-      ));
-    }
+    final posts = await postRepository.fetchPosts(userToken);
+    emit(state.copyWith(posts: posts, status: PostStatus.success, lastEvent: event));
+  } catch (error) {
+    emit(state.copyWith(
+      status: PostStatus.error,
+      errorMessage: error.toString(),
+      lastEvent: event,
+    ));
   }
+}
   
   Future<void> _onCreateComment(
     CreateCommentEvent event,

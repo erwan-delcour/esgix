@@ -6,6 +6,7 @@ enum PostStatus { initial, loading, success, error }
 
 class PostState extends Equatable {
   final List<Post> posts;
+  final List<Post> comments;
   final PostStatus status;
   final String? errorMessage;
   final String? userId;
@@ -21,6 +22,7 @@ class PostState extends Equatable {
 
   const PostState({
     this.posts = const [],
+    this.comments = const [],
     this.status = PostStatus.initial,
     this.errorMessage,
     this.userId,
@@ -33,6 +35,7 @@ class PostState extends Equatable {
 
   PostState copyWith({
     List<Post>? posts,
+    List<Post>? comments,
     PostStatus? status,
     String? errorMessage,
     String? userId,
@@ -44,6 +47,7 @@ class PostState extends Equatable {
   }) {
     return PostState(
       posts: posts ?? this.posts,
+      comments: comments ?? this.comments,
       status: status ?? this.status,
       errorMessage: errorMessage ?? this.errorMessage,
       userId: userId ?? this.userId,
@@ -57,14 +61,15 @@ class PostState extends Equatable {
 
   @override
   List<Object?> get props => [
-        posts,
-        status,
-        errorMessage,
-        userId,
-        updatedPost,
-        currentPage,
-        hasReachedMax,
-        lastEvent,
-        likedPostIds, // Ajout pour suivre les posts likés
-      ];
+    posts,
+    comments,
+    status,
+    errorMessage,
+    userId,
+    updatedPost,
+    currentPage,
+    hasReachedMax,
+    lastEvent,
+    likedPostIds, // Ajout pour suivre les posts likés
+  ];
 }

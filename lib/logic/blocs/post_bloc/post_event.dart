@@ -11,14 +11,16 @@ class LoadPostsEvent extends PostEvent {}
 
 class LoadUserLikedPostsEvent extends PostEvent {}
 
-class ClearCommentsEvent extends PostEvent {}
+class ClearCommentsEvent extends PostEvent {
+  const ClearCommentsEvent();
+}
 
 class LoadCommentsEvent extends PostEvent {
   final String postId;
 
   const LoadCommentsEvent({
     required this.postId
-    });
+  });
 
   @override
   List<Object?> get props => [postId];

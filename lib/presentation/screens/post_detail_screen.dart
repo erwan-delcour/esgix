@@ -8,8 +8,20 @@ import '../../logic/blocs/post_bloc/post_state.dart';
 import '../../logic/blocs/post_bloc/post_event.dart';
 import '../../data/models/post.dart';
 
-class PostDetailScreen extends StatelessWidget {
+class PostDetailScreen extends StatefulWidget {
   const PostDetailScreen({super.key});
+
+  @override
+  State<PostDetailScreen> createState() => _PostDetailScreenState();
+}
+
+class _PostDetailScreenState extends State<PostDetailScreen> {
+
+  @override
+  void dispose() {
+    context.read<PostBloc>().add(const ClearCommentsEvent());
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,8 +32,18 @@ class PostDetailScreen extends StatelessWidget {
       context.read<PostBloc>().add(LoadCommentsEvent(postId: post.id));
     });
 
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Post Details")),
+      appBar: AppBar(
+        title: const Text("Post Details"),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            context.read<PostBloc>().add(const ClearCommentsEvent());
+            Navigator.pop(context);
+          },
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: BlocListener<PostBloc, PostState>(
@@ -68,10 +90,10 @@ class PostDetailScreen extends StatelessWidget {
                       );
                       if (result != null) {
                         context.read<PostBloc>().add(UpdatePostEvent(
-                              postId: post.id,
-                              content: result['content'],
-                              imageUrl: result['imageUrl'],
-                            ));
+                          postId: post.id,
+                          content: result['content'],
+                          imageUrl: result['imageUrl'],
+                        ));
                       }
                     },
                     icon: const Icon(Icons.edit),
@@ -112,14 +134,14 @@ class PostDetailScreen extends StatelessWidget {
                   } else if (state.status == PostStatus.error) {
                     return const Center(
                         child:
-                            Text("Erreur lors du chargement des commentaires"));
-                  } else if (state.posts.isEmpty) {
+                        Text("Erreur lors du chargement des commentaires"));
+                  } else if (state.comments.isEmpty) {
                     return const Center(
                         child: Text("Aucun commentaire pour le moment."));
                   }
 
                   final comments =
-                      state.posts.where((p) => p.parentId == post.id).toList();
+                  state.comments.where((p) => p.parentId == post.id).toList();
 
                   return ListView.builder(
                     shrinkWrap: true,
@@ -137,7 +159,7 @@ class PostDetailScreen extends StatelessWidget {
                             children: [
                               Row(
                                 mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(comment.authorUsername,
                                       style: const TextStyle(
@@ -148,7 +170,7 @@ class PostDetailScreen extends StatelessWidget {
                                           color: Colors.red),
                                       onPressed: () async {
                                         final postBloc =
-                                            context.read<PostBloc>();
+                                        context.read<PostBloc>();
 
                                         final confirm = await showDialog<bool>(
                                           context: context,

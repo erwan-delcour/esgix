@@ -22,13 +22,12 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     on<LoadLikedByEvent>(_onLoadLikedBy);
     on<UpdatePostEvent>(_onUpdatePost);
     on<LoadCommentsEvent>(_onLoadComments);
-    on<CreateCommentEvent>(_onCreateComment); 
+    on<CreateCommentEvent>(_onCreateComment);
     on<DeletePostEvent>(_onDeletePostEvent);
     on<DeleteCommentEvent>(_onDeleteCommentEvent);
-    on<LoadUserLikedPostsEvent>(_onLoadUserLikedPosts); // Ajouté pour récupérer les posts likés
+    on<LoadUserLikedPostsEvent>(_onLoadUserLikedPosts);
     on<ClearCommentsEvent>((event, emit) {
-      final updatedPosts = state.posts.where((post) => post.parentId.isEmpty).toList();
-      emit(state.copyWith(posts: updatedPosts));
+      emit(state.copyWith(comments: [])); // ✅ Réinitialiser les commentaires
     });
   }
 
@@ -45,9 +44,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
   /// Chargement des Posts avec pagination
   Future<void> _onLoadPosts(
-    LoadPostsEvent event,
-    Emitter<PostState> emit,
-  ) async {
+      LoadPostsEvent event,
+      Emitter<PostState> emit,
+      ) async {
     if (state.hasReachedMax) return; // Ne pas recharger si fin des posts atteinte
 
     emit(state.copyWith(status: PostStatus.loading));
@@ -72,15 +71,15 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       emit(state.copyWith(status: PostStatus.error, errorMessage: error.toString()));
     }
   }
-    Future<void> _onLoadComments(
-    LoadCommentsEvent event,
-    Emitter<PostState> emit,
-    ) async {
+  Future<void> _onLoadComments(
+      LoadCommentsEvent event,
+      Emitter<PostState> emit,
+      ) async {
     emit(state.copyWith(status: PostStatus.loading));
 
     try {
-      final posts = await postRepository.fetchComments(userToken, event.postId);
-      emit(state.copyWith(posts: posts, status: PostStatus.success));
+      final comments = await postRepository.fetchComments(userToken, event.postId);
+      emit(state.copyWith(comments: comments, status: PostStatus.success));
     } catch (error) {
       emit(state.copyWith(status: PostStatus.error, errorMessage: error.toString()));
     }
@@ -88,9 +87,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
   /// Rafraîchissement des posts et des likes
   Future<void> _onRefreshPosts(
-    RefreshPostsEvent event,
-    Emitter<PostState> emit,
-  ) async {
+      RefreshPostsEvent event,
+      Emitter<PostState> emit,
+      ) async {
     currentPage = 0; // Réinitialiser la pagination
     emit(state.copyWith(status: PostStatus.loading, posts: [], hasReachedMax: false));
 
@@ -115,22 +114,24 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
-    void _onDeleteCommentEvent(DeleteCommentEvent event, Emitter<PostState> emit) async {
+  void _onDeleteCommentEvent(DeleteCommentEvent event, Emitter<PostState> emit) async {
     try {
       await postRepository.deletePost(userToken, event.commentId);
-      add(LoadCommentsEvent(postId: event.commentId));
+      final updatedComments = state.comments.where((comment) => comment.id != event.commentId).toList();
+
+      emit(state.copyWith(comments: updatedComments, status: PostStatus.success));
     } catch (_) {
-    emit(state.copyWith(status: PostStatus.error));
+      emit(state.copyWith(status: PostStatus.error));
     }
-    }
+  }
 
   Future<void> _onDeletePostEvent(
-    DeletePostEvent event,
-    Emitter<PostState> emit,
-  ) async {
+      DeletePostEvent event,
+      Emitter<PostState> emit,
+      ) async {
     try {
       await postRepository.deletePost(userToken, event.postId);
-      add(RefreshPostsEvent()); // 🔥 Rafraîchir après suppression
+      add(LoadCommentsEvent(postId: event.postId)); // 🔥 Rafraîchir après suppression
     } catch (_) {
       emit(state.copyWith(status: PostStatus.error));
     }
@@ -138,9 +139,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
 
   Future<void> _onLoadUserLikedPosts(
-    LoadUserLikedPostsEvent event,
-    Emitter<PostState> emit,
-  ) async {
+      LoadUserLikedPostsEvent event,
+      Emitter<PostState> emit,
+      ) async {
     if (state.userId == null) return;
 
     try {
@@ -157,9 +158,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
   /// Création d'un Post
   Future<void> _onCreatePost(
-    CreatePostEvent event,
-    Emitter<PostState> emit,
-  ) async {
+      CreatePostEvent event,
+      Emitter<PostState> emit,
+      ) async {
     if (userToken.isEmpty) {
       throw Exception("Veuillez vous connecter avant de créer un post.");
     }
@@ -182,9 +183,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
   /// Like / Unlike d'un Post
   Future<void> _onToggleLikePost(
-    ToggleLikePostEvent event,
-    Emitter<PostState> emit,
-  ) async {
+      ToggleLikePostEvent event,
+      Emitter<PostState> emit,
+      ) async {
     if (userToken.isEmpty) {
       throw Exception("Veuillez vous connecter avant de liker un post.");
     }
@@ -216,9 +217,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
   /// Chargement des utilisateurs ayant liké un post
   Future<void> _onLoadLikedBy(
-    LoadLikedByEvent event,
-    Emitter<PostState> emit,
-  ) async {
+      LoadLikedByEvent event,
+      Emitter<PostState> emit,
+      ) async {
     try {
       final likedBy = await postRepository.fetchLikedBy(
         token: userToken,
@@ -240,9 +241,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
   /// Mise à jour d'un Post
   Future<void> _onUpdatePost(
-  UpdatePostEvent event,
-  Emitter<PostState> emit,
-) async {
+      UpdatePostEvent event,
+      Emitter<PostState> emit,
+      ) async {
     if (userToken.isEmpty) {
       throw Exception("Token utilisateur manquant.");
     }
@@ -261,11 +262,11 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       emit(state.copyWith(status: PostStatus.error, errorMessage: error.toString()));
     }
   }
-  
+
   Future<void> _onCreateComment(
-    CreateCommentEvent event,
-    Emitter<PostState> emit,
-  ) async {
+      CreateCommentEvent event,
+      Emitter<PostState> emit,
+      ) async {
     if (userToken.isEmpty) {
       throw Exception("Token utilisateur manquant.");
     }

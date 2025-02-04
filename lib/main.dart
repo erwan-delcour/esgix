@@ -38,44 +38,44 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
-      providers: [
-        RepositoryProvider.value(value: postRepository),
-        RepositoryProvider.value(value: userRepository),
-      ],
-      child: MultiBlocProvider(
         providers: [
-          BlocProvider(
-            create: (context) => UserBloc(
-              userRepository: context.read<UserRepository>(),
+          RepositoryProvider.value(value: postRepository),
+          RepositoryProvider.value(value: userRepository),
+        ],
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => UserBloc(
+                userRepository: context.read<UserRepository>(),
+              ),
             ),
-          ),
-          BlocProvider(
-            create: (context) {
-              final userBloc = context.read<UserBloc>();
-              return PostBloc(
-                postRepository: context.read<PostRepository>(),
-                userToken: userBloc.state.user?.token ?? '',
-                userId: userBloc.state.user?.id,
-              );
+            BlocProvider(
+              create: (context) {
+                final userBloc = context.read<UserBloc>();
+                return PostBloc(
+                  postRepository: context.read<PostRepository>(),
+                  userToken: userBloc.state.user?.token ?? '',
+                  userId: userBloc.state.user?.id,
+                )..add(LoadPostsEvent());
+              },
+            ),
+          ],
+          child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'ESGIX',
+            theme: ThemeData(primarySwatch: Colors.blue),
+            initialRoute: '/',
+            routes: {
+              '/': (context) => const HomeScreen(),
+              '/postDetail': (context) => const PostDetailScreen(),
+              '/profile': (context) => const ProfileScreen(),
+              '/createPost': (context) => const CreatePostScreen(),
+              '/login': (context) => const LoginScreen(),
+              '/editProfile': (context) => const EditProfileScreen(),
+              '/register': (context) => const RegisterScreen(),
             },
           ),
-        ],
-        child: MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'ESGIX',
-          theme: ThemeData(primarySwatch: Colors.blue),
-          initialRoute: '/',
-          routes: {
-            '/': (context) => const HomeScreen(),
-            '/postDetail': (context) => const PostDetailScreen(),
-            '/profile': (context) => const ProfileScreen(),
-            '/createPost': (context) => const CreatePostScreen(),
-            '/login': (context) => const LoginScreen(),
-            '/editProfile': (context) => const EditProfileScreen(),
-            '/register': (context) => const RegisterScreen(),
-          },
-      ),
-      )
+        )
     );
   }
 }

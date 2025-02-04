@@ -44,11 +44,10 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
   /// Chargement des Posts avec pagination
   Future<void> _onLoadPosts(
-      LoadPostsEvent event,
-      Emitter<PostState> emit,
-      ) async {
-    if (state.hasReachedMax) return; // Ne pas recharger si fin des posts atteinte
-
+    LoadPostsEvent event,
+    Emitter<PostState> emit,
+  ) async {
+    if (state.hasReachedMax) return; 
     emit(state.copyWith(status: PostStatus.loading));
 
     try {
@@ -85,11 +84,11 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
-  /// Rafraîchissement des posts et des likes
+  /// Rafraîchissement des posts
   Future<void> _onRefreshPosts(
-      RefreshPostsEvent event,
-      Emitter<PostState> emit,
-      ) async {
+    RefreshPostsEvent event,
+    Emitter<PostState> emit,
+  ) async {
     currentPage = 0; // Réinitialiser la pagination
     emit(state.copyWith(status: PostStatus.loading, posts: [], hasReachedMax: false));
 
@@ -100,13 +99,14 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         offset: offset,
       );
 
-      // Recharger les likes de chaque post
-      final updatedPosts = await Future.wait(posts.map((post) async {
-        final likedBy = await postRepository.fetchLikedBy(token: userToken, postId: post.id);
-        return post.copyWith(likedBy: likedBy, likesCount: likedBy.length);
-      }));
-
-      emit(state.copyWith(posts: updatedPosts, status: PostStatus.success));
+      emit(state.copyWith(
+        posts: posts, // ✅ Maintenant, `isLiked` est bien géré dans `Post.fromJson`
+        status: PostStatus.success,
+        likedPostIds: posts
+            .where((post) => post.isLiked)
+            .map((post) => post.id)
+            .toSet(), // ✅ Stockage correct des posts likés
+      ));
 
       currentPage++; // Passer à la page suivante après refresh
     } catch (error) {

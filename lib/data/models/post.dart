@@ -71,6 +71,7 @@ class Post {
       updatedAt: json['updatedAt'] ?? '',
       authorId: author['id'] ?? '',
       parentId: json['parent'] ?? '',
+      isLiked: json['isLiked'] ?? false,
       authorUsername: author['username'] ?? '',
       authorAvatar: author['avatar'].toString().isEmpty ? null : author['avatar'],
       likesCount: json['likesCount'] ?? 0,

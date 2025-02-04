@@ -31,11 +31,11 @@ class HomeScreen extends StatelessWidget {
                 final user = state.user;
                 return IconButton(
                   icon: user != null &&
-                      user.avatar != null &&
-                      user.avatar!.isNotEmpty
+                          user.avatar != null &&
+                          user.avatar!.isNotEmpty
                       ? CircleAvatar(
-                    backgroundImage: NetworkImage(user.avatar!),
-                  )
+                          backgroundImage: NetworkImage(user.avatar!),
+                        )
                       : const Icon(Icons.account_circle),
                   onPressed: () => Navigator.pushNamed(context, '/profile'),
                 );
@@ -85,7 +85,7 @@ class HomeScreen extends StatelessWidget {
               },
               child: ListView.builder(
                 itemCount:
-                state.hasReachedMax ? posts.length : posts.length + 1,
+                    state.hasReachedMax ? posts.length : posts.length + 1,
                 itemBuilder: (context, index) {
                   if (index >= posts.length) {
                     return const Center(child: CircularProgressIndicator());
@@ -139,38 +139,55 @@ class HomeScreen extends StatelessWidget {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                post.likesCount.toString(),
-                                style: TextStyle(
-                                  color: currentUserId != null &&
-                                      (post.likedBy
-                                          .contains(currentUserId) ||
-                                          state.likedPostIds
-                                              .contains(post.id))
-                                      ? Colors.red
-                                      : Colors.grey,
-                                ),
+                              // ✅ Ajout de l'affichage du nombre de commentaires
+                              Row(
+                                children: [
+                                  const Icon(Icons.comment,
+                                      color: Colors.grey, size: 20),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    post.commentsCount.toString(),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
                               ),
-
-                              IconButton(
-                                icon: Icon(
-                                  (post.likedBy.contains(currentUserId) ||
+                              const SizedBox(
+                                  width:
+                                      16), // Espacement entre commentaires et likes
+                              // ✅ Icône Like
+                              Row(
+                                children: [
+                                  IconButton(
+                                    icon: Icon(
+                                      (post.likedBy.contains(currentUserId) ||
                                       state.likedPostIds.contains(post.id))
-                                      ? Icons.favorite
-                                      : Icons.favorite_border,
-                                  color: currentUserId != null &&
-                                      (post.likedBy
-                                          .contains(currentUserId) ||
-                                          state.likedPostIds
-                                              .contains(post.id))
-                                      ? Colors.red
-                                      : Colors.grey,
-                                ),
-                                onPressed: () {
-                                  context.read<PostBloc>().add(
-                                    ToggleLikePostEvent(postId: post.id),
-                                  );
-                                },
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      color: (post.likedBy.contains(currentUserId) ||
+                                      state.likedPostIds.contains(post.id))
+                                          ? Colors.red
+                                          : Colors.grey,
+                                    ),
+                                    onPressed: () {
+                                      context.read<PostBloc>().add(
+                                            ToggleLikePostEvent(
+                                                postId: post.id),
+                                          );
+                                    },
+                                  ),
+                                  Text(
+                                    post.likesCount.toString(),
+                                    style: TextStyle(
+                                      color: (post.likedBy.contains(currentUserId) ||
+                                      state.likedPostIds.contains(post.id))
+                                          ? Colors.red
+                                          : Colors.grey,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),

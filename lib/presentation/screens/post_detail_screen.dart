@@ -17,11 +17,11 @@ class PostDetailScreen extends StatefulWidget {
 
 class _PostDetailScreenState extends State<PostDetailScreen> {
 
-  @override
-  void dispose() {
-    context.read<PostBloc>().add(const ClearCommentsEvent());
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   context.read<PostBloc>().add(const ClearCommentsEvent());
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {

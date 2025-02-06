@@ -100,15 +100,15 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       );
 
       emit(state.copyWith(
-        posts: posts, // ✅ Maintenant, `isLiked` est bien géré dans `Post.fromJson`
+        posts: posts, 
         status: PostStatus.success,
         likedPostIds: posts
             .where((post) => post.isLiked)
             .map((post) => post.id)
-            .toSet(), // ✅ Stockage correct des posts likés
+            .toSet(), 
       ));
 
-      currentPage++; // Passer à la page suivante après refresh
+      currentPage++; 
     } catch (error) {
       emit(state.copyWith(status: PostStatus.error, errorMessage: error.toString()));
     }
@@ -150,7 +150,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         userId: state.userId!,
       );
 
-      emit(state.copyWith(likedPostIds: likedPostIds.toSet())); // Mise à jour des posts likés
+      emit(state.copyWith(likedPostIds: likedPostIds.toSet()));
     } catch (error) {
       print("Erreur lors du chargement des posts likés : $error");
     }
@@ -257,7 +257,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         imageUrl: event.imageUrl,
       );
 
-      add(RefreshPostsEvent());
+      add(const RefreshPostsEvent());
     } catch (error) {
       emit(state.copyWith(status: PostStatus.error, errorMessage: error.toString()));
     }
@@ -280,7 +280,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         content: event.content,
       );
 
-      add(RefreshPostsEvent());
+      add(const RefreshPostsEvent());
     } catch (error) {
       emit(state.copyWith(status: PostStatus.error, errorMessage: error.toString()));
     }

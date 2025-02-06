@@ -39,7 +39,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            context.read<PostBloc>().add(const ClearCommentsEvent());
+            final postBloc = context.read<PostBloc>();
+            postBloc.add(const ClearCommentsEvent());
+            postBloc.add(const RefreshPostsEvent());
+            if(currentUser != null) {
+              postBloc.add(LoadUserLikedPostsEvent());
+            }
             Navigator.pop(context);
           },
         ),

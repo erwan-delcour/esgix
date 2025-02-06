@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../logic/blocs/post_bloc/post_bloc.dart';
 import '../../logic/blocs/post_bloc/post_event.dart';
+import '../../logic/blocs/user_bloc/user_bloc.dart';
 
 class CreateCommentScreen extends StatefulWidget {
   final String parentId;
@@ -69,7 +70,9 @@ class _CreateCommentScreenState extends State<CreateCommentScreen> {
       final content = _commentController.text.trim();
       final imageUrl = _imageUrlController.text.trim();
 
-      context.read<PostBloc>().add(
+      final postBloc = context.read<PostBloc>();
+
+      postBloc.add(
         CreatePostEvent(
           content: content,
           imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
@@ -77,7 +80,17 @@ class _CreateCommentScreenState extends State<CreateCommentScreen> {
         ),
       );
 
-      Navigator.pop(context);
+      // 🔥 Ajout d'un délai pour attendre la mise à jour du state
+      Future.delayed(const Duration(milliseconds: 300), () {
+        postBloc.add(const RefreshPostsEvent());
+
+        if (context.read<UserBloc>().state.user != null) {
+          postBloc.add(LoadUserLikedPostsEvent());
+        }
+
+        Navigator.pop(context);
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Commentaire créé avec succès !"),

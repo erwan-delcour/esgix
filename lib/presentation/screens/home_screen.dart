@@ -70,7 +70,7 @@ class HomeScreen extends StatelessWidget {
               final currentUserId = context.read<UserBloc>().state.user?.id;
               if (currentUserId != null) {
                 postBloc.add(
-                    LoadUserLikedPostsEvent()); // Recharger les likes de l'utilisateur après le refresh
+                    LoadUserLikedPostsEvent()); 
               }
             },
             child: NotificationListener<ScrollNotification>(
@@ -93,7 +93,6 @@ class HomeScreen extends StatelessWidget {
 
                   final post = posts[index];
 
-                  // Charger les likes si nécessaire et si l'utilisateur est connecté
                   if (currentUserId != null && !loadedLikes.contains(post.id)) {
                     loadedLikes.add(post.id);
                     context
@@ -139,7 +138,6 @@ class HomeScreen extends StatelessWidget {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              // ✅ Ajout de l'affichage du nombre de commentaires
                               Row(
                                 children: [
                                   const Icon(Icons.comment,
@@ -156,8 +154,7 @@ class HomeScreen extends StatelessWidget {
                               ),
                               const SizedBox(
                                   width:
-                                      16), // Espacement entre commentaires et likes
-                              // ✅ Icône Like
+                                      16),
                               Row(
                                 children: [
                                   IconButton(

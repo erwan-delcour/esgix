@@ -70,7 +70,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               );
             }
           },
-          child: Column(
+          child: SingleChildScrollView(
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(post.content, style: const TextStyle(fontSize: 18)),
@@ -219,6 +220,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

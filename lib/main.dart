@@ -63,7 +63,7 @@ class MyApp extends StatelessWidget {
           child: MaterialApp(
             debugShowCheckedModeBanner: false,
             title: 'ESGIX',
-            theme: ThemeData(primarySwatch: Colors.blue),
+            theme: _darkTheme, // Applique le thème sombre directement
             initialRoute: '/',
             routes: {
               '/': (context) => const HomeScreen(),
@@ -79,3 +79,31 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+// 🌑 Thème sombre personnalisé
+final ThemeData _darkTheme = ThemeData(
+  colorScheme: ColorScheme.dark(
+    primary: const Color.fromARGB(255, 183, 58, 100),
+    secondary: Colors.purpleAccent,
+    background: Colors.black,
+    surface: Colors.grey[900]!,
+    onPrimary: Colors.white,
+    onSecondary: Colors.white,
+    onBackground: Colors.white,
+    onSurface: Colors.white,
+  ),
+  appBarTheme: const AppBarTheme(
+    backgroundColor: Color.fromARGB(255, 58, 183, 129),
+    foregroundColor: Colors.white,
+  ),
+  scaffoldBackgroundColor: Colors.black,
+  iconTheme: const IconThemeData(color: Colors.white),
+  textTheme: const TextTheme(
+    bodyLarge: TextStyle(color: Colors.white), 
+    bodyMedium: TextStyle(color: Colors.white), 
+    titleLarge: TextStyle(color: Colors.white), 
+  ),
+  buttonTheme: ButtonThemeData(
+    buttonColor: const Color.fromARGB(255, 183, 58, 100), 
+  ),
+);

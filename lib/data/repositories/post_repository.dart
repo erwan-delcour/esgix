@@ -17,6 +17,16 @@ class PostRepository {
     }
   }
 
+  Future<Post> fetchPostById(String? token, String postId) async {
+    final data = await apiService.getRequest('/posts/$postId', token: token);
+
+    if (data.containsKey('data')) {
+      return Post.fromJson(data['data']);
+    } else {
+      throw Exception('Impossible de charger le post.');
+    }
+  }
+
   Future<List<Post>> fetchPostsWithPagination({
     required String? token,
     required int page,

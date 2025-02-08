@@ -83,6 +83,22 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
+  Future<void> _onRefreshPost(
+    RefreshPostEvent event,
+    Emitter<PostState> emit,
+  ) async {
+    try {
+      final updatedPost = await postRepository.fetchPostById(userToken, event.postId);
+      final updatedPosts = state.posts.map((post) =>
+        post.id == updatedPost.id ? updatedPost : post
+      ).toList();
+
+      emit(state.copyWith(posts: updatedPosts, status: PostStatus.success));
+    } catch (error) {
+      emit(state.copyWith(status: PostStatus.error, errorMessage: error.toString()));
+    }
+  }
+
   /// Rafraîchissement des posts
   Future<void> _onRefreshPosts(
     RefreshPostsEvent event,
@@ -238,29 +254,34 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
-  /// Mise à jour d'un Post
-  Future<void> _onUpdatePost(
-      UpdatePostEvent event,
-      Emitter<PostState> emit,
-      ) async {
-    if (userToken.isEmpty) {
-      throw Exception("Token utilisateur manquant.");
-    }
-    emit(state.copyWith(status: PostStatus.loading, lastEvent: event));
+Future<void> _onUpdatePost(
+  UpdatePostEvent event,
+  Emitter<PostState> emit,
+) async {
+  print("UpdatePostEvent reçu avec id: ${event.postId}");
 
-    try {
-      await postRepository.updatePost(
-        token: userToken,
-        id: event.postId,
-        content: event.content,
-        imageUrl: event.imageUrl,
-      );
-
-      add(const RefreshPostsEvent());
-    } catch (error) {
-      emit(state.copyWith(status: PostStatus.error, errorMessage: error.toString()));
-    }
+  if (userToken.isEmpty) {
+    throw Exception("Token utilisateur manquant.");
   }
+
+  emit(state.copyWith(status: PostStatus.loading, lastEvent: event));
+
+  try {
+    await postRepository.updatePost(
+      token: userToken,
+      id: event.postId,
+      content: event.content,
+      imageUrl: event.imageUrl,
+    );
+
+    print("Post mis à jour, état updated");
+    emit(state.copyWith(status: PostStatus.updated));
+
+    add(const RefreshPostsEvent()); 
+  } catch (error) {
+    emit(state.copyWith(status: PostStatus.error, errorMessage: error.toString()));
+  }
+}
 
   Future<void> _onCreateComment(
       CreateCommentEvent event,

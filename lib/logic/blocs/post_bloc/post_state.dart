@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 import '../../../data/models/post.dart';
 import 'post_event.dart';
 
-enum PostStatus { initial, loading, success, error }
+enum PostStatus { initial, loading, success, error, updated }
 
 class PostState extends Equatable {
   final List<Post> posts;

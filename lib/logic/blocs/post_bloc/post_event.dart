@@ -11,6 +11,11 @@ class LoadPostsEvent extends PostEvent {}
 
 class LoadUserLikedPostsEvent extends PostEvent {}
 
+class RefreshPostEvent extends PostEvent {
+  final String postId;
+  const RefreshPostEvent({required this.postId});
+}
+
 class ClearCommentsEvent extends PostEvent {
   const ClearCommentsEvent();
 }

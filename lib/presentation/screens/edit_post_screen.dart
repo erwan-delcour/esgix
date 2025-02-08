@@ -1,4 +1,8 @@
+import 'package:esgix/logic/blocs/post_bloc/post_bloc.dart';
+import 'package:esgix/logic/blocs/post_bloc/post_event.dart';
+import 'package:esgix/logic/blocs/post_bloc/post_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class EditPostScreen extends StatefulWidget {
   final String postId;
@@ -36,32 +40,47 @@ class _EditPostScreenState extends State<EditPostScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _contentController,
-                decoration: const InputDecoration(labelText: "Contenu"),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Le contenu est requis";
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _imageUrlController,
-                decoration: const InputDecoration(labelText: "URL de l'image (optionnelle)"),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _onUpdatePost,
-                child: const Text("Mettre à jour le Post"),
-              )
-              ,
-            ],
+        child: BlocListener<PostBloc, PostState>(
+          listener: (context, state) {
+            if (state.status == PostStatus.success) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text("Données mises à jour avec succès.")),
+              );
+              Navigator.pop(context);
+            } else if (state.status == PostStatus.error) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Erreur: ${state.errorMessage}")),
+              );
+            }
+          },
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _contentController,
+                  decoration: const InputDecoration(labelText: "Contenu"),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Le contenu est requis";
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _imageUrlController,
+                  decoration: const InputDecoration(
+                      labelText: "URL de l'image (optionnelle)"),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _onUpdatePost,
+                  child: const Text("Mettre à jour le Post"),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -72,11 +91,13 @@ class _EditPostScreenState extends State<EditPostScreen> {
     if (_formKey.currentState?.validate() ?? false) {
       final updatedContent = _contentController.text.trim();
       final updatedImageUrl = _imageUrlController.text.trim();
+      final postBloc = context.read<PostBloc>();
 
-      Navigator.pop(context, {
-        'content': updatedContent,
-        'imageUrl': updatedImageUrl,
-      });
+      postBloc.add(UpdatePostEvent(
+        postId: widget.postId,
+        content: updatedContent,
+        imageUrl: updatedImageUrl,
+      ));
     }
   }
 }

@@ -94,13 +94,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           ),
                         ),
                       );
-                      if (result != null) {
-                        context.read<PostBloc>().add(UpdatePostEvent(
-                          postId: post.id,
-                          content: result['content'],
-                          imageUrl: result['imageUrl'],
-                        ));
-                      }
                     },
                     icon: const Icon(Icons.edit),
                     label: const Text("Edit the Post"),

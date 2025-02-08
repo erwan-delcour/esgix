@@ -20,21 +20,24 @@ class UserRepository {
   }
 
   Future<User> update(String token, String userId, {
-    required String username,
+    String? username,
     String? avatar,
     String? description,
   }) async {
-    
-    final updatedUser = User(
-      id: userId,
-      username: username,
-      avatar: avatar,
-      description: description,
-      email: '', 
+    print(username);
+    print(avatar);
+    print(description);
+    final response = await apiService.putRequest(
+      '/users/$userId',
+      {
+        if (username != null ) 'username': username,
+        if (avatar != null) 'avatar': avatar,
+        if (description != null) 'description': description,
+      },
       token: token,
     );
 
-    return updatedUser; 
+    return User.fromJson(response);
   }
 
   Future<User> registerUser({

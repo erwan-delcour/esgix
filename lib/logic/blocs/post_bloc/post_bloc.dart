@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'post_event.dart';
-import 'post_event.dart';
 import 'post_state.dart';
 import '../../../data/repositories/post_repository.dart';
 
@@ -27,7 +26,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     on<DeleteCommentEvent>(_onDeleteCommentEvent);
     on<LoadUserLikedPostsEvent>(_onLoadUserLikedPosts);
     on<ClearCommentsEvent>((event, emit) {
-      emit(state.copyWith(comments: [])); // ✅ Réinitialiser les commentaires
+      emit(state.copyWith(comments: [])); 
     });
   }
 

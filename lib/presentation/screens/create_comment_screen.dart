@@ -18,7 +18,7 @@ class CreateCommentScreen extends StatefulWidget {
 
 class _CreateCommentScreenState extends State<CreateCommentScreen> {
   final _commentController = TextEditingController();
-  final _imageUrlController = TextEditingController(); // Ajoutez cette ligne
+  final _imageUrlController = TextEditingController(); 
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -80,7 +80,6 @@ class _CreateCommentScreenState extends State<CreateCommentScreen> {
         ),
       );
 
-      // 🔥 Ajout d'un délai pour attendre la mise à jour du state
       Future.delayed(const Duration(milliseconds: 300), () {
         postBloc.add(const RefreshPostsEvent());
 

@@ -82,12 +82,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final description = _descriptionController.text.trim();
 
     final userBloc = context.read<UserBloc>();
-
+    
     userBloc.add(
       UpdateUserEvent(
-        username: username.isNotEmpty ? username : null,
-        avatar: avatar.isNotEmpty ? avatar : null,
-        description: description.isNotEmpty ? description : null,
+        username: username,
+        avatar: avatar,
+        description: description,
       ),
     );
   }

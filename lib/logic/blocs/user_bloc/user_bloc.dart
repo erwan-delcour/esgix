@@ -40,21 +40,38 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     emit(state.copyWith(status: UserStatus.loading));
     try {
       final currentUser = state.user!;
-      final updatedUser = User(
-        id: currentUser.id,
-        username: (event.username?.isNotEmpty ?? false) ? event.username! : currentUser.username,
-        email: currentUser.email,
-        avatar: (event.avatar?.isNotEmpty ?? false) ? event.avatar! : currentUser.avatar,
-        description: (event.description?.isNotEmpty ?? false) ? event.description! : currentUser.description,
-        token: currentUser.token,
-      );
 
+      // Vérifie si la nouvelle valeur est différente, sinon envoie `null`
+      final String? newUsername =
+          (event.username != null && event.username != currentUser.username)
+              ? event.username
+              : null;
+      final String? newAvatar =
+          (event.avatar != null && event.avatar != currentUser.avatar)
+              ? event.avatar
+              : null;
+      final String? newDescription = (event.description != null &&
+              event.description != currentUser.description)
+          ? event.description
+          : (event.description == "" ? "" : null); // ✅ Autoriser la suppression
+
+      // Appel de l'API avec uniquement les champs modifiés
       await userRepository.update(
         currentUser.token,
         currentUser.id,
-        username: event.username ?? currentUser.username,
-        avatar: event.avatar,
-        description: event.description,
+        username: newUsername,
+        avatar: newAvatar,
+        description: newDescription,
+      );
+
+      // Créer une nouvelle instance de User avec les valeurs mises à jour
+      final updatedUser = User(
+        id: currentUser.id,
+        username: newUsername ?? currentUser.username,
+        email: currentUser.email,
+        avatar: newAvatar ?? currentUser.avatar,
+        description: newDescription ?? currentUser.description, // ✅ Permet ""
+        token: currentUser.token,
       );
 
       emit(state.copyWith(user: updatedUser, status: UserStatus.success));

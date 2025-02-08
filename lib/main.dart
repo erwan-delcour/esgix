@@ -93,7 +93,7 @@ final ThemeData _darkTheme = ThemeData(
     onSurface: Colors.white,
   ),
   appBarTheme: const AppBarTheme(
-    backgroundColor: Color.fromARGB(255, 58, 183, 129),
+    backgroundColor:  Color.fromARGB(255, 183, 58, 100),
     foregroundColor: Colors.white,
   ),
   scaffoldBackgroundColor: Colors.black,

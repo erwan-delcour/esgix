@@ -1,12 +1,12 @@
-import 'package:esgix/logic/blocs/user_bloc/user_bloc.dart';
-import 'package:esgix/presentation/screens/create_comment_screen.dart';
-import 'package:esgix/presentation/screens/edit_post_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../logic/blocs/post_bloc/post_bloc.dart';
 import '../../logic/blocs/post_bloc/post_state.dart';
 import '../../logic/blocs/post_bloc/post_event.dart';
+import '../../logic/blocs/user_bloc/user_bloc.dart';
 import '../../data/models/post.dart';
+import 'edit_post_screen.dart';
+import 'create_comment_screen.dart';
 
 class PostDetailScreen extends StatefulWidget {
   const PostDetailScreen({super.key});
@@ -71,60 +71,42 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     const SizedBox(height: 16),
                     Text('Auteur: ${updatedPost.authorUsername}', style: TextStyle(color: Colors.grey[400])),
                     const SizedBox(height: 16),
-                    if (currentUser == updatedPost.authorUsername)
-                      Center(
-                        child: ElevatedButton.icon(
-                          onPressed: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => EditPostScreen(post: updatedPost),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.edit),
-                          label: const Text("Modifier le Post"),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orangeAccent, 
-                            foregroundColor: Colors.white,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (currentUser == updatedPost.authorUsername)
+                          IconButton(
+                            onPressed: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EditPostScreen(post: updatedPost),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.edit, color: Colors.orangeAccent, size: 30),
                           ),
-                        ),
-                      ),
-                    const SizedBox(height: 16),
-                    if (currentUser == post.authorUsername)
-                      Center(
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            context.read<PostBloc>().add(DeletePostEvent(post.id));
-                          },
-                          icon: const Icon(Icons.delete),
-                          label: const Text("Supprimer le Post"),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red, 
-                            foregroundColor: Colors.white, 
+                        if (currentUser == post.authorUsername)
+                          IconButton(
+                            onPressed: () {
+                              context.read<PostBloc>().add(DeletePostEvent(post.id));
+                            },
+                            icon: const Icon(Icons.delete, color: Colors.red, size: 30),
                           ),
-                        ),
-                      ),
-                    const SizedBox(height: 16),
-                    if (currentUser != null)
-                      Center(
-                        child: ElevatedButton.icon(
-                          onPressed: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => CreateCommentScreen(parentId: post.id),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.comment),
-                          label: const Text("Ajouter un commentaire"),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
+                        if (currentUser != null)
+                          IconButton(
+                            onPressed: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CreateCommentScreen(parentId: post.id),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.comment, color: Colors.green, size: 30),
                           ),
-                        ),
-                      ),
+                      ],
+                    ),
                     const SizedBox(height: 16),
                     const Text("Commentaires", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     BlocBuilder<PostBloc, PostState>(

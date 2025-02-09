@@ -7,7 +7,6 @@ import 'data/repositories/user_repository.dart';
 import 'logic/blocs/post_bloc/post_bloc.dart';
 import 'logic/blocs/post_bloc/post_event.dart';
 import 'logic/blocs/user_bloc/user_bloc.dart';
-import 'logic/blocs/user_bloc/user_state.dart';
 import 'presentation/screens/edit_profile_screen.dart';
 import 'presentation/screens/home_screen.dart';
 import 'presentation/screens/post_detail_screen.dart';

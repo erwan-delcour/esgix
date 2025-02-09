@@ -28,7 +28,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     return BlocListener<PostBloc, PostState>(
       listener: (context, state) {
         if (state.status == PostStatus.updated) {
-          context.read<PostBloc>().add(RefreshPostEvent(postId: post.id));
+          Future.delayed(const Duration(seconds: 1), () {
+            context.read<PostBloc>().add(RefreshPostEvent(postId: post.id));
+          });
         }
       },
       child: Scaffold(
@@ -57,7 +59,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   (p) => p.id == post.id,
                   orElse: () => post,
                 );
-
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -90,6 +91,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           IconButton(
                             onPressed: () {
                               context.read<PostBloc>().add(DeletePostEvent(post.id));
+                              context.read<PostBloc>().add(const RefreshPostsEvent());
+                              Navigator.pop(context);
                             },
                             icon: const Icon(Icons.delete, color: Colors.red, size: 30),
                           ),
@@ -109,6 +112,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     ),
                     const SizedBox(height: 16),
                     const Text("Commentaires", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 16),
                     BlocBuilder<PostBloc, PostState>(
                       builder: (context, state) {
                         if (state.status == PostStatus.loading) {
@@ -131,7 +135,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             return Card(
                               margin: const EdgeInsets.symmetric(vertical: 8),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10), // Coins arrondis
+                                borderRadius: BorderRadius.circular(10),
                                 side: const BorderSide(color: Colors.grey, width: 0.5),
                               ),
                               elevation: 5,
@@ -177,7 +181,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       ],
                                     ),
                                     const SizedBox(height: 4),
-                                    Text(comment.content, style: TextStyle(color: Colors.white70)),
+                                    Text(comment.content, style: const TextStyle(color: Colors.white70)),
                                   ],
                                 ),
                               ),

@@ -30,18 +30,15 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     });
   }
 
-  /// Mise à jour dynamique du token utilisateur
   void updateUser({required String token, required String? id}) {
     userToken = token;
     emit(state.copyWith(userId: id));
 
-    // Charger les posts likés après connexion
     if (id != null) {
       add(LoadUserLikedPostsEvent());
     }
   }
 
-  /// Chargement des Posts avec pagination
   Future<void> _onLoadPosts(
     LoadPostsEvent event,
     Emitter<PostState> emit,
@@ -99,12 +96,11 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
-  /// Rafraîchissement des posts
   Future<void> _onRefreshPosts(
     RefreshPostsEvent event,
     Emitter<PostState> emit,
   ) async {
-    currentPage = 0; // Réinitialiser la pagination
+    currentPage = 0; 
     emit(state.copyWith(status: PostStatus.loading, posts: [], hasReachedMax: false));
 
     try {
@@ -146,7 +142,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       ) async {
     try {
       await postRepository.deletePost(userToken, event.postId);
-      add(LoadCommentsEvent(postId: event.postId)); // 🔥 Rafraîchir après suppression
+      add(LoadPostsEvent());
     } catch (_) {
       emit(state.copyWith(status: PostStatus.error));
     }

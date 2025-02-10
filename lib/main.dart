@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
           child: MaterialApp(
             debugShowCheckedModeBanner: false,
             title: 'ESGIX',
-            theme: _darkTheme, // Applique le thème sombre directement
+            theme: _darkTheme, 
             initialRoute: '/',
             routes: {
               '/': (context) => const HomeScreen(),
@@ -79,7 +79,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// 🌑 Thème sombre personnalisé
 final ThemeData _darkTheme = ThemeData(
   colorScheme: ColorScheme.dark(
     primary: const Color.fromARGB(255, 183, 58, 100),

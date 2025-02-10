@@ -36,7 +36,6 @@ class ApiService {
       try {
         final decoded = jsonDecode(response.body);
         if (decoded is List) {
-          // Si la réponse est une liste, renvoyez une map vide avec une clé spéciale
           return {'data': decoded};
         } else if (decoded is Map<String, dynamic>) {
           return decoded;
@@ -99,7 +98,6 @@ class ApiService {
     }
   }
 
-  /// Requête PUT avec Logs
   Future<Map<String, dynamic>> putRequest(
     String endpoint,
     Map<String, dynamic> data, {
@@ -141,7 +139,6 @@ class ApiService {
     }
   }
   
-  // get user by id
   Future<Map<String, dynamic>> getUserById(String endpoint, String token) async {
     final headers = {
       'x-api-key': ApiConstants.apiKey,
@@ -176,7 +173,6 @@ class ApiService {
     }
   }
 
-  /// Requête DELETE avec Logs
   Future<http.Response> deleteRequest(String endpoint, {String? token}) async {
     final headers = {
       'x-api-key': ApiConstants.apiKey,

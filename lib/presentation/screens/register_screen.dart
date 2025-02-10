@@ -13,7 +13,7 @@ class RegisterScreen extends StatelessWidget {
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
     final usernameController = TextEditingController();
-    final avatarController = TextEditingController(); // URL optionnelle
+    final avatarController = TextEditingController();
 
     return Scaffold(
       appBar: AppBar(
@@ -49,7 +49,6 @@ class RegisterScreen extends StatelessWidget {
             BlocConsumer<UserBloc, UserState>(
               listener: (context, state) {
                 if (state.status == UserStatus.success) {
-                  // Rediriger vers l'accueil après inscription
                   Navigator.of(context).pushNamedAndRemoveUntil(
                     '/login',
                     (route) => false,

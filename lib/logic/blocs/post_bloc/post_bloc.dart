@@ -6,8 +6,8 @@ import '../../../data/repositories/post_repository.dart';
 class PostBloc extends Bloc<PostEvent, PostState> {
   final PostRepository postRepository;
   String userToken;
-  int currentPage = 0; // Page actuelle pour la pagination
-  static const int offset = 10; // Taille des résultats par page
+  int currentPage = 0; 
+  static const int offset = 10; 
 
   PostBloc({
     required this.postRepository,
@@ -167,7 +167,6 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
-  /// Création d'un Post
   Future<void> _onCreatePost(
       CreatePostEvent event,
       Emitter<PostState> emit,
@@ -192,7 +191,6 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
-  /// Like / Unlike d'un Post
   Future<void> _onToggleLikePost(
       ToggleLikePostEvent event,
       Emitter<PostState> emit,
@@ -204,7 +202,6 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     try {
       await postRepository.toggleLikePost(token: userToken, postId: event.postId);
 
-      // Recharger les posts likés
       add(LoadUserLikedPostsEvent());
 
       final updatedPosts = state.posts.map((post) {
@@ -226,7 +223,6 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }
   }
 
-  /// Chargement des utilisateurs ayant liké un post
   Future<void> _onLoadLikedBy(
       LoadLikedByEvent event,
       Emitter<PostState> emit,

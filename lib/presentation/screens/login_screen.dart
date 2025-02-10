@@ -42,14 +42,11 @@ class LoginScreen extends StatelessWidget {
                     final postBloc = context.read<PostBloc>();
                     postBloc.updateUser(token: user.token, id: user.id);
 
-                    // Charger les posts après mise à jour
                     postBloc.add(LoadPostsEvent());
 
-                    // Charger tous les posts likés de l'utilisateur
                     postBloc.add(LoadUserLikedPostsEvent());
                   }
 
-                  // Naviguer vers la page d'accueil
                   Navigator.of(context).pushNamedAndRemoveUntil(
                     '/',
                     (route) => false,

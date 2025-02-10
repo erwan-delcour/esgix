@@ -11,13 +11,11 @@ class PostState extends Equatable {
   final String? errorMessage;
   final String? userId;
   final Post? updatedPost;
-  final PostEvent? lastEvent; // Ajout pour suivre l'événement déclencheur
+  final PostEvent? lastEvent; 
 
-  // Champs pour la pagination
   final int currentPage;
   final bool hasReachedMax;
 
-  // Champs pour la gestion des likes utilisateur
   final Set<String> likedPostIds;
 
   const PostState({
@@ -70,6 +68,6 @@ class PostState extends Equatable {
     currentPage,
     hasReachedMax,
     lastEvent,
-    likedPostIds, // Ajout pour suivre les posts likés
+    likedPostIds, 
   ];
 }

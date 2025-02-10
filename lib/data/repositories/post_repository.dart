@@ -160,7 +160,7 @@ Future<void> createPost({
   }) async {
     List<String> likedPostIds = [];
     int currentPage = 0;
-    const int offset = 10; // Nombre de posts par page
+    const int offset = 10;
     bool hasMore = true;
 
     while (hasMore) {
@@ -172,10 +172,10 @@ Future<void> createPost({
       if (data.containsKey('data')) {
         final List<dynamic> posts = data['data'];
         if (posts.isEmpty) {
-          hasMore = false; // Plus de posts à charger
+          hasMore = false; 
         } else {
           likedPostIds.addAll(posts.map((post) => post['id'] as String));
-          currentPage++; // Charger la page suivante
+          currentPage++; 
         }
       } else {
         throw Exception("Impossible de récupérer les posts likés.");

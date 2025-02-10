@@ -41,7 +41,6 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     try {
       final currentUser = state.user!;
 
-      // Vérifie si la nouvelle valeur est différente, sinon envoie `null`
       final String? newUsername =
           (event.username != null && event.username != currentUser.username)
               ? event.username
@@ -53,9 +52,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       final String? newDescription = (event.description != null &&
               event.description != currentUser.description)
           ? event.description
-          : (event.description == "" ? "" : null); // ✅ Autoriser la suppression
+          : (event.description == "" ? "" : null); 
 
-      // Appel de l'API avec uniquement les champs modifiés
       await userRepository.update(
         currentUser.token,
         currentUser.id,
@@ -64,13 +62,12 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         description: newDescription,
       );
 
-      // Créer une nouvelle instance de User avec les valeurs mises à jour
       final updatedUser = User(
         id: currentUser.id,
         username: newUsername ?? currentUser.username,
         email: currentUser.email,
         avatar: newAvatar ?? currentUser.avatar,
-        description: newDescription ?? currentUser.description, // ✅ Permet ""
+        description: newDescription ?? currentUser.description, 
         token: currentUser.token,
       );
 

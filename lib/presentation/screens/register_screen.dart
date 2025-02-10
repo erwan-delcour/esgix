@@ -4,20 +4,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../logic/blocs/user_bloc/user_bloc.dart';
 import '../../logic/blocs/user_bloc/user_event.dart';
 import '../../logic/blocs/user_bloc/user_state.dart';
-import '../../logic/blocs/post_bloc/post_bloc.dart';
-import '../../logic/blocs/post_bloc/post_event.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatelessWidget {
+  const RegisterScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
+    final usernameController = TextEditingController();
+    final avatarController = TextEditingController();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Se connecter"),
+        title: const Text("Créer un compte"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -29,26 +29,28 @@ class LoginScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             TextField(
+              controller: usernameController,
+              decoration: const InputDecoration(labelText: "Nom d'utilisateur"),
+            ),
+            const SizedBox(height: 16),
+            TextField(
               controller: passwordController,
               obscureText: true,
               decoration: const InputDecoration(labelText: "Mot de passe"),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: avatarController,
+              decoration: const InputDecoration(
+                labelText: "URL de l'avatar (optionnel)",
+              ),
             ),
             const SizedBox(height: 32),
             BlocConsumer<UserBloc, UserState>(
               listener: (context, state) {
                 if (state.status == UserStatus.success) {
-                  final user = state.user;
-                  if (user != null) {
-                    final postBloc = context.read<PostBloc>();
-                    postBloc.updateUser(token: user.token, id: user.id);
-
-                    postBloc.add(LoadPostsEvent());
-
-                    postBloc.add(LoadUserLikedPostsEvent());
-                  }
-
                   Navigator.of(context).pushNamedAndRemoveUntil(
-                    '/',
+                    '/login',
                     (route) => false,
                   );
                 } else if (state.status == UserStatus.error) {
@@ -65,31 +67,25 @@ class LoginScreen extends StatelessWidget {
                 if (state.status == UserStatus.loading) {
                   return const CircularProgressIndicator();
                 }
-                return Column(
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        final email = emailController.text.trim();
-                        final password = passwordController.text.trim();
 
-                        context.read<UserBloc>().add(
-                              LoginUserEvent(
-                                email: email,
-                                password: password,
-                              ),
-                            );
-                      },
-                      child: const Text("Se connecter"),
-                    ),
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/register');
-                      },
-                      child: const Text("Créer un compte"),
-                    ),
-                  ],
-                );  
+                return ElevatedButton(
+                  onPressed: () {
+                    final email = emailController.text.trim();
+                    final username = usernameController.text.trim();
+                    final password = passwordController.text.trim();
+                    final avatar = avatarController.text.trim();
+
+                    context.read<UserBloc>().add(
+                          RegisterUserEvent(
+                            email: email,
+                            username: username,
+                            password: password,
+                            avatar: avatar.isEmpty ? null : avatar,
+                          ),
+                        );
+                  },
+                  child: const Text("S'inscrire"),
+                );
               },
             ),
           ],

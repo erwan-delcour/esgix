@@ -29,7 +29,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /// Champ de Contenu
               TextFormField(
                 controller: _contentController,
                 decoration: const InputDecoration(
@@ -46,7 +45,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               ),
               const SizedBox(height: 16),
 
-              /// Champ URL de l'Image
               TextFormField(
                 controller: _imageUrlController,
                 decoration: const InputDecoration(
@@ -56,7 +54,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               ),
               const SizedBox(height: 32),
 
-              /// Bouton Valider
               Center(
                 child: ElevatedButton(
                   onPressed: _onCreatePost,
@@ -80,7 +77,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
             ),
           );
-
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

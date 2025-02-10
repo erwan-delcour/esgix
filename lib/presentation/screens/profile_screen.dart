@@ -33,31 +33,38 @@ class ProfileScreen extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundImage: NetworkImage(
-                    user.avatar?.isNotEmpty == true
-                        ? user.avatar!
-                        : 'https://i.pravatar.cc/150?img=2',
-                  ),
-                ),
-                const SizedBox(height: 16),
+                user.avatar != null && user.avatar!.isNotEmpty
+                    ? CircleAvatar(radius: 100,
+                      backgroundImage: NetworkImage(user.avatar!),
+                    )
+                    : const Icon(Icons.account_circle, size: 100),
+                
+                const SizedBox(height: 30),
                 Text(
-                  "Username: ${user.username}",
-                  style: const TextStyle(fontSize: 18),
+                  "Username : ${user.username}",
+                  style: const TextStyle(fontSize: 20),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  "Email: ${user.email}",
+                  "Email : ${user.email}",
                   style: const TextStyle(fontSize: 16),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  "Description: ${user.description?.isNotEmpty == true ? user.description! : 'Aucune description'}",
-                  style: const TextStyle(fontSize: 14),
+                  "Description : ${user.description?.isNotEmpty == true ? user.description! : 'Aucune description'}",
+                  style: const TextStyle(fontSize: 16),
                 ),
+                const Spacer(),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/editProfile');
+                    },
+                    child: const Text("Edit Profile"),
+                  ),
+                )
               ],
             ),
           );

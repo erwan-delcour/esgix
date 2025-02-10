@@ -20,6 +20,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Widget build(BuildContext context) {
     final post = ModalRoute.of(context)!.settings.arguments as Post;
     final currentUser = context.read<UserBloc>().state.user?.username;
+    final currentUserId = context.read<UserBloc>().state.user?.id;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<PostBloc>().add(LoadCommentsEvent(postId: post.id));
@@ -56,7 +57,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             child: BlocBuilder<PostBloc, PostState>(
               builder: (context, state) {
                 final updatedPost = state.posts.firstWhere(
-                  (p) => p.id == post.id,
+                  (p) => p.id == post.id, 
                   orElse: () => post,
                 );
                 return Column(
@@ -75,7 +76,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        if (currentUser == updatedPost.authorUsername)
+                        if (currentUserId == updatedPost.authorId)
                           IconButton(
                             onPressed: () async {
                               await Navigator.push(
@@ -87,7 +88,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             },
                             icon: const Icon(Icons.edit, color: Colors.orangeAccent, size: 30),
                           ),
-                        if (currentUser == post.authorUsername)
+                        if (currentUserId == post.authorId)
                           IconButton(
                             onPressed: () {
                               context.read<PostBloc>().add(DeletePostEvent(post.id));
@@ -149,7 +150,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       children: [
                                         Text(comment.authorUsername,
                                             style: const TextStyle(fontWeight: FontWeight.bold)),
-                                        if (comment.authorUsername == currentUser)
+                                        if (comment.authorId == currentUserId)
                                           IconButton(
                                             icon: const Icon(Icons.delete, color: Colors.red),
                                             onPressed: () async {
